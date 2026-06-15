@@ -1,7 +1,7 @@
 # Code Review Standards (Universal)
 
 After completing any implementation, review for the following.
-Fix violations proactively — don't wait to be asked.
+Fix violations proactively — don't wait to be asked. Run /simplify before presenting code to the user.
 
 ## Complexity & Size
 - Functions longer than 30 lines are likely doing too much — split by responsibility
