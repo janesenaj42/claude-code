@@ -84,7 +84,7 @@ the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the he
 | Conventional Commits | Changelogs and release tools read the type | [`commitlint.config.js`](commitlint.config.js); `npm run commit` for a guided prompt |
 | PR/MR title is a Conventional Commit | Squash merging makes the title the commit on `main` | The CI team's pipeline |
 | Branch `<type>/<issue>/<slug>` | The branch, title and commit agree, and name the issue | [`scripts/checks/branch-name.mjs`](scripts/checks/branch-name.mjs) |
-| PR/MR template | Every description says what changed, how it was tested, and what was assumed | Review |
+| PR/MR and issue templates, for GitHub and GitLab | Every PR/MR says what changed, how it was tested and what was assumed; every issue says what's wrong or what's needed | Review; [`scripts/checks/templates-match.mjs`](scripts/checks/templates-match.mjs) keeps the two platforms' copies the same |
 
 ### Each stack is linted for the review standards
 

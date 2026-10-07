@@ -19,3 +19,6 @@ pre-commit:
     json-valid:
       glob: "*.json"
       run: node scripts/checks/json-valid.mjs {staged_files}
+    templates-match:
+      glob: "{.github,.gitlab}/**/*.md"
+      run: node scripts/checks/templates-match.mjs

@@ -1,6 +1,6 @@
 ---
 name: adopt-baseline
-description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hooks, Conventional Commits, branch names, PR/MR template, lint config, ADR template, glossary) to a project, new or existing, TypeScript (React through init-react), Java (Gradle) or Python, with lefthook or husky. CI is not set up: the CI team owns pipelines. Also re-runs to bring a project up to date with the baseline. Use when the user wants to adopt, apply, install or update the baseline, or set up a repo's conventions or hooks from it.
+description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hooks, Conventional Commits, branch names, PR/MR and issue templates, lint config, ADR template, glossary) to a project, new or existing, TypeScript (React through init-react), Java (Gradle) or Python, with lefthook or husky. CI is not set up: the CI team owns pipelines. Also re-runs to bring a project up to date with the baseline. Use when the user wants to adopt, apply, install or update the baseline, or set up a repo's conventions or hooks from it.
 ---
 
 # Adopt the baseline
@@ -28,7 +28,7 @@ Report a table of what you find, with the file that told you:
 | Areas: folders with their own stack | `package.json` with `react` and `typescript` → `react` (init-react; not Next.js, which init-react refuses: use `ts`); with `typescript` only → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
 | Each Area's existing commands | `package.json` `scripts`; Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
 | Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; `git config core.hooksPath` set to another folder (e.g. `.githooks/`) → shell hooks; executable files in `.git/hooks/` other than `*.sample` → local hooks; none |
-| Platform, for the PR/MR template's path | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
+| Platform, for the templates' paths | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
 | Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `.github/pull_request_template.md`, `CONTEXT.md`, `docs/adr/`, `.gitattributes` |
 | Stack not covered | Maven, Gradle Groovy-only, pnpm/yarn, Poetry: say so, and adapt the preset's commands rather than skipping it |
 
@@ -64,7 +64,7 @@ missing, and ask where they disagree.
 | Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks: append as `presets/husky/README.md` says |
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
-| PR/MR template | `.github/pull_request_template.md` | Merge into `.github/pull_request_template.md` (GitHub) or `.gitlab/merge_request_templates/Default.md` (GitLab); replace the `<kind of change>` Definition of Done line with the target's own checks |
+| PR/MR and issue templates | GitHub: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`. GitLab: `.gitlab/merge_request_templates/Default.md`, `.gitlab/issue_templates/` | The target's platform only (both if it is mirrored to both, then also `scripts/checks/templates-match.mjs` and its `lefthook.yml` entry). Merge with templates the target has; replace the `<kind of change>` Definition of Done line with the target's own checks |
 | Check layers table | `README.md` "Checks run in two layers" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
