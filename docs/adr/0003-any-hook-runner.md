@@ -6,7 +6,8 @@ status: accepted
 
 Each git-hook check is a script in `scripts/checks/` (or a commitlint call) that lefthook,
 husky or CI runs the same way. A project without hooks gets lefthook (`lefthook.yml`). A project
-already on husky keeps husky and gets lines appended to `.husky/` (`presets/husky/`).
+already on husky, or on a versioned shell-hook folder (`core.hooksPath`), keeps it and gets
+lines appended there (`presets/husky/`).
 
 ## Considered options
 
@@ -18,4 +19,7 @@ already on husky keeps husky and gets lines appended to `.husky/` (`presets/husk
 
 - A repo must not run husky and lefthook together: husky sets `core.hooksPath=.husky`, and
   `lefthook install` writes its own hooks, so the last one installed disables the other.
+- `lefthook install` renames hooks it finds in `.git/hooks/` to `<hook>.old`, which then no
+  longer run, and installs nothing when `core.hooksPath` points elsewhere. `/adopt-baseline`
+  checks for both before installing.
 - CI calls the same scripts, so every project is enforced the same way whichever runner it uses.

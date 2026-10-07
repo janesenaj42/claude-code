@@ -23,7 +23,7 @@ Report a table of what you find, with the file that told you:
 |---|---|
 | Areas: folders with their own stack | `package.json` with `typescript` → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
 | Each Area's existing commands | `package.json` `scripts`; Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
-| Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; none |
+| Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; `git config core.hooksPath` set to another folder (e.g. `.githooks/`) → shell hooks; executable files in `.git/hooks/` other than `*.sample` → local hooks; none |
 | Existing CI | `.github/workflows/*.yml` |
 | Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `.github/pull_request_template.md`, `CONTEXT.md`, `docs/adr/`, `.gitattributes` |
 | Stack not covered | Maven, Gradle Groovy-only, pnpm/yarn, Poetry: say so, and adapt the preset's commands rather than skipping it |
@@ -31,6 +31,11 @@ Report a table of what you find, with the file that told you:
 A target with `.pre-commit-config.yaml`: ask whether to add the baseline's checks to it (as
 `repo: local` hooks calling the same scripts) or replace it with lefthook. Never run two hook
 runners (`docs/adr/0003-any-hook-runner.md` in the baseline).
+
+A target with local hooks in `.git/hooks/`: they are on this machine only, not in the repo.
+`lefthook install` renames each to `<hook>.old`, after which it no longer runs, with no
+warning. Show the user each script and ask: move its commands into `lefthook.yml`, or drop
+it. Install lefthook only after that.
 
 ## 2. Agree the plan
 
@@ -54,7 +59,7 @@ missing, and ask where they disagree.
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
 | Git hooks, lefthook or none | `lefthook.yml`, `presets/<stack>/lefthook.yml` | Merge; per Area, add its preset's commands with `root: <folder>/` unless the Area is `.`; drop commands the target already runs |
-| Git hooks, husky | `presets/husky/*`, `presets/<stack>/husky-pre-commit` | Append to `.husky/<hook>`; set the `cd` folder; drop `lefthook` from `package.json` |
+| Git hooks, husky or shell hooks | `presets/husky/*`, `presets/<stack>/husky-pre-commit` | Append to `<hooks folder>/<hook>` (`.husky/`, or the `core.hooksPath` folder); set the `cd` folder; drop `lefthook` from `package.json`. Shell hooks: a new hook file needs `#!/bin/sh` and `chmod +x` (`git update-index --chmod=+x`) |
 | PR template | `.github/pull_request_template.md`, `.github/scripts/pr-description.mjs` | Merge; replace the `<kind of change>` Definition of Done line with the target's own checks. The script reads the template's `##` headings, so it follows whatever the template becomes |
 | CI | `.github/workflows/ci.yml`, `.github/scripts/markdown-links.mjs`, `presets/<stack>/ci-job.yml` | Add the shared jobs; one build job per Area with `working-directory` set; skip a build job the target's CI already covers and say which |
 | Lint rules | `presets/ts/eslint.config.fragment.js`, `presets/java-gradle/{build.gradle.fragment.kts,config/}`, `presets/python/pyproject.fragment.toml` | Merge into the Area's config. If the target already breaks these rules, show the count and ask: fix now, or add the rules as warnings and open an issue |
@@ -79,7 +84,10 @@ Run each and report pass or fail with the output; fix what fails before reportin
 3. `printf 'feat: x\n' | npx commitlint` passes; `printf 'bad\n' | npx commitlint` fails.
 4. `node .github/scripts/markdown-links.mjs`.
 5. Every `onEdit` and `onStop` command in `checks.json`, run by hand in its Area.
-6. `npx --no -- lefthook run pre-commit --all-files` (lefthook), or each `.husky/` hook with `sh`.
+6. The hooks fire: stage a file with invalid JSON and run `git commit -m 'bad'`; it must be
+   rejected. A passing `lefthook run` is not enough: `lefthook install` exits 0 without
+   installing when `core.hooksPath` points elsewhere, and `prepare` hides its errors
+   (`|| true`). Check `git config core.hooksPath` is empty (lefthook) or the hooks folder.
 7. Each CI build job's commands, run locally in its Area.
 
 ## 5. Report
