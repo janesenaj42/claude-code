@@ -5,23 +5,60 @@ one stack or several, with lefthook or husky, on GitHub or GitLab, online or on-
 
 ## Start
 
-| Project | Do |
-|---|---|
-| New | GitHub: "Use this template" on this repo. GitLab: create the project from it as a group or instance project template, or import it. Then in Claude Code, in the new repo: `/adopt-baseline` |
-| Existing | Install the skill once (below), then in the project: `/adopt-baseline` |
+`<baseline URL>` below is the clone URL of whichever copy of this repo you can reach: GitHub,
+GitLab, or an on-prem mirror.
 
-Install `/adopt-baseline` for every project on your machine, from whichever copy of this repo
-you can reach (GitHub, GitLab, on-prem mirror):
+### New project
 
-```sh
-git clone <clone URL of this repo> ~/.claude/baseline
-mkdir -p ~/.claude/skills
-ln -s ~/.claude/baseline/.claude/skills/adopt-baseline ~/.claude/skills/adopt-baseline
-```
+1. Create the repo from this one:
+   - GitHub: "Use this template" on this repo's page.
+   - GitLab: New project > "Create from template" (once an admin has added this repo as a group
+     or instance template), or New project > "Import project" > "Repository by URL" with
+     `<baseline URL>`.
+2. Clone the new repo, then in it run `claude`, then `/adopt-baseline`. The skill is in the repo,
+   so nothing needs installing.
+3. Answer its questions (stacks, folders, platform) and approve the plan it shows. It removes
+   the baseline-only files, sets up each stack, and runs every check.
+4. Commit on a branch (e.g. `chore/adopt-baseline`) and open a PR/MR.
 
-Run it again later to bring a project up to date with this repo. Where there's no clone (a
-cloud session), set `BASELINE_REPO` to a path or clone URL. What it does:
-[`.claude/skills/adopt-baseline/SKILL.md`](.claude/skills/adopt-baseline/SKILL.md).
+### Existing project, on your machine
+
+1. Once per machine, install the skill for every project:
+
+   ```sh
+   git clone <baseline URL> ~/.claude/baseline
+   mkdir -p ~/.claude/skills
+   ln -s ~/.claude/baseline/.claude/skills/adopt-baseline ~/.claude/skills/adopt-baseline
+   ```
+
+2. In the project, on a new branch: run `claude`, then `/adopt-baseline`.
+3. Review the plan (each piece marked add, merge or skip) and approve it. The skill applies it
+   and runs every check.
+4. Commit and open a PR/MR.
+
+### Existing project, in a Claude Code cloud session
+
+`~/.claude/` doesn't exist in a cloud session, so the skill comes from the baseline repo itself.
+
+1. Start the session on the project's repo.
+2. If the baseline is on GitHub: add it to the session by prompting "add the repo
+   `<owner>/<name>`". Its skills load, including `/adopt-baseline`. Run `/adopt-baseline` and
+   name the project as the target.
+
+Cloud sessions add GitHub repos only. For a baseline on GitLab or on-prem:
+
+1. In the cloud environment's settings (environment menu in the session's title bar > Edit), add
+   the environment variable `BASELINE_REPO=<baseline URL>`. The container's network must reach
+   that host, and a private repo needs credentials the container can use. Start a new session:
+   variables apply to new sessions only.
+2. In the session, prompt: "Clone `$BASELINE_REPO` and follow its
+   `.claude/skills/adopt-baseline/SKILL.md` for this repo."
+
+### Bring a project up to date
+
+Run `/adopt-baseline` again in the project, the same way as above. It pulls the latest baseline
+first (`git -C ~/.claude/baseline pull --ff-only` on your machine), compares, and proposes only
+what differs.
 
 ## What a project gets
 

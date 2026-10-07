@@ -5,13 +5,16 @@ description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hook
 
 # Adopt the baseline
 
-The **baseline repo** is the repo holding this skill: resolve this skill's folder with
-`realpath` (it may be a symlink in `~/.claude/skills/`) and go up three levels. If that isn't a
-git checkout (e.g. a cloud session with no user-scope skills), use `$BASELINE_REPO`: a local
-path, or a clone URL to clone into the scratchpad. If it's unset, ask the user for the clone
-URL; never assume a host, since the baseline is served from more than one (on-prem and online).
+The **baseline repo**, in this order:
+
+1. The repo holding this skill: resolve this skill's folder with `realpath` (it may be a symlink
+   in `~/.claude/skills/`) and go up three levels, if that is a git checkout.
+2. `$BASELINE_REPO`: a local path, or a clone URL to clone into the scratchpad.
+3. Otherwise ask the user for the clone URL. Never assume a host: the baseline is served from
+   more than one (on-prem and online).
+
 Run `git -C <baseline> pull --ff-only` first, unless the target *is* a fresh copy of the
-template.
+template. On a re-run, the plan in step 2 lists only what differs from the baseline.
 
 The **target** is the repo the user names, or the current repo.
 
