@@ -1,6 +1,6 @@
 ---
 name: adopt-baseline
-description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hooks, Conventional Commits, branch names, PR/MR and issue templates, lint config, ADR template, glossary) to a project, new or existing, TypeScript (React through init-react), Java (Gradle) or Python, with lefthook or husky. CI is not set up: the CI team owns pipelines. Also re-runs to bring a project up to date with the baseline. Use when the user wants to adopt, apply, install or update the baseline, or set up a repo's conventions or hooks from it.
+description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hooks, Conventional Commits, branch names, lint config, ADR template, glossary) to a project, new or existing, TypeScript (React through init-react), Java (Gradle) or Python, with lefthook or husky. CI is not set up: the CI team owns pipelines. Also re-runs to bring a project up to date with the baseline. Use when the user wants to adopt, apply, install or update the baseline, or set up a repo's conventions or hooks from it.
 ---
 
 # Adopt the baseline
@@ -29,7 +29,7 @@ Report a table of what you find, with the file that told you:
 | Each Area's existing commands | `package.json` `scripts` (note names that differ from the presets', e.g. `eslint` for `lint`, `check-format` for `format:check`); Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
 | Each Area's lint setup | ESLint version and config file (`.eslintrc*` is legacy: init-react keeps it and warns when its ESLint is older than the Standard's); whether the project's own `lint` script runs at all before any change |
 | Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; `git config core.hooksPath` set to another folder (e.g. `.githooks/`) → shell hooks; executable files in `.git/hooks/` other than `*.sample` → local hooks; none |
-| Platform, for the templates' paths | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
+| Platform | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
 | Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `CONTEXT.md`, `docs/adr/`, `.gitattributes`, `CONTRIBUTING.md` (release and commit rules) |
 | Existing templates | Every file in `.github/pull_request_template*`, `.github/PULL_REQUEST_TEMPLATE/`, `.github/ISSUE_TEMPLATE/`, `.gitlab/merge_request_templates/`, `.gitlab/issue_templates/`, whatever its name |
 | Package registry | `.npmrc`, `~/.npmrc`, lockfile `resolved` URLs, scripts that rewrite them, docs mentioning an air-gapped or on-prem network. If the target installs from a mirror (Nexus, Artifactory, GitLab), ask for its URL: init-react needs `--registry`, and `@janesenaj42/*` must be mirrored there first |
@@ -50,8 +50,9 @@ Show one table: each piece below, **add / merge / skip**, and why. Ask about any
 conflicts, and wait for a yes:
 
 1. An existing commit convention, or a PR/MR template with other sections.
-2. Existing issue or PR/MR templates under other names: keep the target's, and add the
-   baseline's only for the kinds it lacks. Never put two templates for the same kind side by side.
+2. Templates in the target (any PR/MR or issue template): they replace the org-wide ones
+   for that repo (GitHub ignores the org's `ISSUE_TEMPLATE` folder entirely when a repo has its
+   own). Keep them, or remove them to use the org's; ask.
 3. Script names that differ from the presets' (e.g. `check-format`): init-react adds its own
    names beside them; say which pairs will exist and ask whether to remove the old ones.
 4. The target's own lint or format check already failing before any change: list it; the
@@ -77,7 +78,7 @@ missing, and ask where they disagree.
 | Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks (`core.hooksPath`): append as `presets/husky/README.md` says, keeping every `\|\| exit 1`; a new hook file gets `#!/bin/sh` and the executable bit |
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
-| PR/MR and issue templates | GitHub: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`. GitLab: `.gitlab/merge_request_templates/Default.md`, `.gitlab/issue_templates/` | The target's platform, or both when it has both `.github/` and `.gitlab/` (then also `scripts/checks/templates-match.mjs` and its `lefthook.yml` entry; it pairs only the baseline's own file names). For the target's existing templates, see step 2, item 2; replace the `<kind of change>` Definition of Done line with the target's own checks |
+| PR/MR and issue templates | None: they are published once per org/group (`README.md`, "Templates, once per org and group") | Copy nothing. Check the target's org or group has them (GitHub: a **public** `.github` repo in the org with `.github/pull_request_template.md`; GitLab: Group → Settings → General → Templates set) and report it if not |
 | Check layers table | `README.md` "Checks run in two layers" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
