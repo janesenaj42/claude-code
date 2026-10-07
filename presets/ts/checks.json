@@ -1,0 +1,12 @@
+{
+  "name": "typescript",
+  "root": ".",
+  "onEdit": [
+    { "run": ["npx", "--no", "--", "prettier", "--write", "--ignore-unknown", "{file}"] },
+    { "match": "\\.(ts|tsx|js|jsx|mjs|cjs)$", "run": ["npx", "--no", "--", "eslint", "--max-warnings", "0", "--no-warn-ignored", "{file}"] }
+  ],
+  "onStop": [
+    { "run": ["npm", "run", "typecheck"] },
+    { "run": ["npm", "test"] }
+  ]
+}

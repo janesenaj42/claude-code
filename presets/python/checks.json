@@ -1,0 +1,12 @@
+{
+  "name": "python",
+  "root": ".",
+  "onEdit": [
+    { "match": "\\.py$", "run": ["uv", "run", "ruff", "check", "--fix", "{file}"] },
+    { "match": "\\.py$", "run": ["uv", "run", "ruff", "format", "{file}"] }
+  ],
+  "onStop": [
+    { "run": ["uv", "run", "mypy", "."] },
+    { "run": ["uv", "run", "pytest", "-q"], "okExitCodes": [0, 5] }
+  ]
+}

@@ -1,0 +1,7 @@
+# Python (presets/python): format check and lint the staged files of this area.
+(
+  cd . || exit 1
+  staged=$(git diff --cached --name-only --diff-filter=ACMR --relative -- '*.py')
+  [ -z "$staged" ] || uv run ruff format --check $staged || exit 1
+  [ -z "$staged" ] || uv run ruff check $staged || exit 1
+)

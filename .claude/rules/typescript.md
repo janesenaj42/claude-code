@@ -1,6 +1,10 @@
-# Code Review Standards (React / TypeScript)
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
 
-Extends root `CLAUDE.md`. All universal rules apply.
+# Code Review Standards (React / TypeScript)
 
 ## TypeScript
 - `as` casting is a last resort — if you need it, the type upstream is wrong

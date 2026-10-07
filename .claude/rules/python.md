@@ -1,6 +1,9 @@
-# Code Review Standards (Python / FastAPI)
+---
+paths:
+  - "**/*.py"
+---
 
-Extends root `CLAUDE.md`. All universal rules apply.
+# Code Review Standards (Python / FastAPI)
 
 ## Types
 - No `Any` from `typing` — use `TypeVar`, `Union`, `Literal`, or proper Pydantic models

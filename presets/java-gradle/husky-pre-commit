@@ -1,0 +1,5 @@
+# Java (presets/java-gradle): format check when Java files are staged in this area.
+(
+  cd . || exit 1
+  [ -z "$(git diff --cached --name-only --diff-filter=ACMR --relative -- '*.java')" ] || sh ./gradlew spotlessCheck -q || exit 1
+)

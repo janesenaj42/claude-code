@@ -1,0 +1,2 @@
+# Baseline: staged .json files parse.
+git diff --cached --name-only --diff-filter=ACMR -- '*.json' | xargs node scripts/checks/json-valid.mjs

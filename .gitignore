@@ -1,0 +1,9 @@
+node_modules/
+.env
+.DS_Store
+
+# Personal Claude settings and instructions
+.claude/settings.local.json
+CLAUDE.local.md
+# Session-specific lock file, meaningless outside the machine that wrote it
+.claude/scheduled_tasks.lock
