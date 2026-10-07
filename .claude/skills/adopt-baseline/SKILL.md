@@ -78,7 +78,7 @@ missing, and ask where they disagree.
 | Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks (`core.hooksPath`): append as `presets/husky/README.md` says, keeping every `\|\| exit 1`; a new hook file gets `#!/bin/sh` and the executable bit |
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
-| PR/MR and issue templates | None: they are published once per org/group (`README.md`, "Templates, once per org and group") | Copy nothing. Check the target's org or group has them (GitHub: a **public** `.github` repo in the org with `.github/pull_request_template.md`; GitLab: Group → Settings → General → Templates set) and report it if not |
+| PR/MR and issue templates | None: they are published once per org/group (`README.md`, "Templates, once per org and group") | Copy nothing. Check the target's org or group has **both** kinds, and report each one missing. GitHub: a **public** `.github` repo in the org with `.github/pull_request_template.md` and `.github/ISSUE_TEMPLATE/` (`bug_report.md`, `feature_request.md`, `config.yml`). GitLab: Group → Settings → General → Templates set to a project with `.gitlab/merge_request_templates/Default.md` and `.gitlab/issue_templates/` (`Bug.md`, `Feature.md`) |
 | Check layers table | `README.md` "Checks run in two layers" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
