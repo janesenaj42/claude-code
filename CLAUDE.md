@@ -12,7 +12,7 @@ with a link.
 |---|---|
 | Git hooks and the commands they run | `lefthook.yml` (or `.husky/`) |
 | Commands Claude's hooks run after an edit and before a turn ends | `.claude/hooks/checks.json` |
-| CI checks | `scripts/checks/`; run by `.github/workflows/ci.yml` (GitHub) or `.gitlab-ci.yml` (GitLab) |
+| Commit, branch and JSON checks | `scripts/checks/` |
 | Commit types | `commitlint.config.js` |
 | Tool versions | `package.json`, <build file: `build.gradle.kts`, `pyproject.toml`> |
 | <fact> | <file> |
@@ -22,8 +22,8 @@ with a link.
 A README earns a line only for what these files cannot say: how to get started, what a
 convention is for, the gotcha no config confesses.
 
-A rule people must remember to follow belongs in CI, not in a doc. Check layers: `README.md`,
-"Checks run in three layers".
+A rule people must remember to follow belongs in a check (git hook, Claude hook, lint rule), not
+in a doc. Check layers: `README.md`, "Checks run in two layers". CI belongs to the CI team.
 
 ## Language
 
@@ -31,7 +31,7 @@ Use the terms in `CONTEXT.md`. A new term gets defined there first.
 
 ## Commits and branches
 
-Conventional Commits, checked by commitlint (git hook, CI). Branches are
+Conventional Commits, checked by commitlint (git hook). Branches are
 `<type>/<issue number>/<short-description>` (`scripts/checks/branch-name.mjs`). PRs are
 squash-merged, so the PR (GitHub) or MR (GitLab) title is the commit on `main`.
 

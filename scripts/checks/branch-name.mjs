@@ -5,8 +5,7 @@
 // on main agree.
 //
 // Usage: node branch-name.mjs [branch]   (default: the current branch)
-// Run by the pre-push hook (lefthook.yml or .husky/pre-push) and by CI on every PR/MR
-// (.github/workflows/ci.yml, .gitlab-ci.yml).
+// Run by the pre-push hook (lefthook.yml or .husky/pre-push); a pipeline can run it too.
 import { execFileSync } from 'node:child_process';
 import load from '@commitlint/load';
 
@@ -16,7 +15,7 @@ const EXEMPT = [/^main$/, /^release-please--/, /^dependabot\//, /^renovate\//, /
 const branch =
   process.argv[2] ?? execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8' }).trim();
 
-// Detached HEAD (mid-rebase, CI checkouts): nothing to name.
+// Detached HEAD (mid-rebase, pipeline checkouts): nothing to name.
 if (branch === 'HEAD' || EXEMPT.some((pattern) => pattern.test(branch))) process.exit(0);
 
 const { rules } = await load();

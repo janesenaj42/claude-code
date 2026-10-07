@@ -5,13 +5,9 @@
 | `checks.json` | `.claude/hooks/checks.json`, `areas` | `root` |
 | `lefthook.yml` | `lefthook.yml`, `pre-commit.commands` | add `root: <folder>/` when the area isn't the repo root |
 | `husky-pre-commit` | `.husky/pre-commit`, appended | the folder after `cd` |
-| `github-job.yml` | `.github/workflows/ci.yml`, `jobs` (GitHub) | `working-directory` |
-| `gitlab-job.yml` | `.gitlab-ci.yml`, top level (GitLab) | `AREA_DIR`, `cache.key.files` (`<folder>/uv.lock`) |
 | `pyproject.fragment.toml` | `pyproject.toml` | — |
 
 The project needs `ruff`, `mypy` and `pytest` as dev dependencies (`uv add --dev ruff mypy pytest`)
-and a committed `uv.lock`: CI runs `uv sync --locked`, which fails when the lockfile is missing
-or stale.
+and a committed `uv.lock`, so `uv sync --locked` (for the CI team) installs the same versions.
 
-pytest exits 5 when it collects no tests. The Stop hook accepts 5 (`okExitCodes`); CI does not,
-so a project without tests fails CI rather than passing with nothing run.
+pytest exits 5 when it collects no tests. The Stop hook accepts 5 (`okExitCodes`).

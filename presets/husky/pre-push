@@ -1,2 +1,2 @@
-# Baseline: <type>/[<issue number>/]<short-description>; CI checks it on every PR too.
+# Baseline: <type>/[<issue number>/]<short-description>.
 node scripts/checks/branch-name.mjs

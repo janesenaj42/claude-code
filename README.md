@@ -57,24 +57,23 @@ what differs.
 
 | Rule | File |
 |---|---|
-| Every fact in one file, docs link to it; a rule people must remember belongs in CI | [`CLAUDE.md`](CLAUDE.md) |
+| Every fact in one file, docs link to it; a rule people must remember belongs in a check | [`CLAUDE.md`](CLAUDE.md) |
 | Code review standards, for every stack | [`CLAUDE.md`](CLAUDE.md) |
 | Stack review standards, loaded only when Claude reads that stack's files | [`.claude/rules/`](.claude/rules/) `typescript.md`, `java.md`, `python.md` |
 | How to write docs, comments, commit messages and PR descriptions | [`.claude/rules/`](.claude/rules/) `docs.md`, `writing-style.md` |
 
-### Checks run in three layers
+### Checks run in two layers
 
-CI runs every check the git hooks run, so skipping a hook (`--no-verify`) or Claude (editing by
-hand) doesn't get past review.
+CI is not part of the baseline: the CI team owns pipelines. Git hooks can be skipped, so the CI
+team runs the same checks; `/adopt-baseline` reports which.
 
 | Layer | Defined in | Runs | On failure | Bypass |
 |---|---|---|---|---|
 | Claude hooks | `.claude/settings.json`, `.claude/hooks/checks.json` | After each Claude edit; when Claude ends a turn | Error returned to Claude; the turn can't end until fixed | Edits made outside Claude Code |
 | Git hooks | `lefthook.yml` or `.husky/` | `pre-commit`, `commit-msg`, `pre-push` | Commit or push rejected | `--no-verify` |
-| CI | `.github/workflows/ci.yml`, `.gitlab-ci.yml` | Every PR/MR and push to `main` | Failing check on the PR/MR | None, once merging requires the checks (branch protection; GitLab "Pipelines must succeed") |
 
-The checks themselves are scripts in [`scripts/checks/`](scripts/checks/), so every layer and
-both platforms run the same code. [`.claude/hooks/checks.json`](.claude/hooks/checks.json) sets
+The checks themselves are scripts in [`scripts/checks/`](scripts/checks/), so any hook runner,
+and any pipeline, runs the same code. [`.claude/hooks/checks.json`](.claude/hooks/checks.json) sets
 the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the header of
 [`.claude/hooks/run.mjs`](.claude/hooks/run.mjs).
 
@@ -83,15 +82,15 @@ the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the he
 | Convention | Why | Checked by |
 |---|---|---|
 | Conventional Commits | Changelogs and release tools read the type | [`commitlint.config.js`](commitlint.config.js); `npm run commit` for a guided prompt |
-| PR/MR title is a Conventional Commit | Squash merging makes the title the commit on `main` | CI |
+| PR/MR title is a Conventional Commit | Squash merging makes the title the commit on `main` | The CI team's pipeline |
 | Branch `<type>/<issue>/<slug>` | The branch, title and commit agree, and name the issue | [`scripts/checks/branch-name.mjs`](scripts/checks/branch-name.mjs) |
-| Description follows the template | `gh`, `glab` and the APIs skip the template | [`scripts/checks/pr-description.mjs`](scripts/checks/pr-description.mjs) |
+| PR/MR template | Every description says what changed, how it was tested, and what was assumed | Review |
 
 ### Each stack is linted for the review standards
 
 [`presets/`](presets/) has, per stack (`ts`, `java-gradle`, `python`): the Claude and git hook
-commands, a CI job for GitHub and for GitLab, and lint config that enforces the standards marked
-*(lint)* in `CLAUDE.md`. `presets/husky/` is for projects that keep husky or their own hooks.
+commands and lint config that enforces the standards marked *(lint)* in `CLAUDE.md`. React projects
+get theirs from [init-react](https://github.com/janesenaj42/init-react) instead of `presets/ts`. `presets/husky/` is for projects that keep husky or their own hooks.
 
 ### Terms and decisions are written down
 
@@ -110,32 +109,17 @@ run the git hooks. Each stack's build, lint and test commands stay in its own to
 
 ### Any hook runner calls the same scripts
 
-lefthook, husky, a `core.hooksPath` folder and CI all call the scripts in `scripts/checks/`. A
+lefthook, husky, a `core.hooksPath` folder and a pipeline all call the scripts in `scripts/checks/`. A
 project without hooks gets lefthook; one with husky or its own hooks keeps them
 ([`presets/husky/`](presets/husky/)). Never two runners in one repo: husky sets
 `core.hooksPath`, and `lefthook install` then installs nothing (exit 0); `lefthook install` also
 renames hooks in `.git/hooks/` to `<hook>.old`, which then don't run.
 
-### GitHub and GitLab, online and on-prem, with no host in any file
+### No host in any file
 
-Each platform's CI file only passes its values to `scripts/checks/`. What differs between
-installations comes from configuration:
-
-| Varies | Set by |
-|---|---|
-| Where the baseline is cloned from | You, when cloning; `BASELINE_REPO` for `/adopt-baseline` |
-| GitHub runner | `CI_RUNS_ON` repository or organization variable (JSON) |
-| GitLab images | `NODE_IMAGE`, `JAVA_IMAGE`, `UV_IMAGE` CI/CD variables, overriding the YAML defaults |
-| GitLab runner | Jobs have no tags; add `default: tags:` to `.gitlab-ci.yml` to pin one |
-| npm, Gradle, PyPI registries | Each tool's configuration on the machine or runner, never committed |
-
-What each platform can't do:
-
-| Platform | Limit | Effect |
-|---|---|---|
-| GitHub Enterprise Server | `uses:` can't come from a variable | The pinned actions must be reachable: GitHub Connect, or synced with `actions-sync` |
-| GitLab | No pipeline when only an MR description changes | The description check re-runs on the next push, or by re-running the job |
-| GitLab | `CI_MERGE_REQUEST_DESCRIPTION` is cut at 2700 characters | `pr-description.mjs` doesn't report sections after the cut |
+Where the baseline is cloned from is set when you clone it (`BASELINE_REPO` for
+`/adopt-baseline`). npm, Gradle and PyPI registries come from each tool's configuration on the
+machine, never from a committed file.
 
 ## Recommended user-scope skills
 

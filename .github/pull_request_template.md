@@ -13,8 +13,7 @@ Closes #
 
 ## Screenshots (optional)
 
-<!-- Screen changes only; delete this section otherwise. A heading ending in
-     "(optional)" may be left out (scripts/checks/pr-description.mjs). -->
+<!-- Screen changes only; delete this section otherwise. -->
 
 ## Deviations and assumptions
 

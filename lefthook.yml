@@ -7,7 +7,7 @@ commit-msg:
     conventional-commit:
       run: npx --no -- commitlint --edit {1}
 
-# <type>/[<issue number>/]<short-description>; CI checks it on every PR too.
+# <type>/[<issue number>/]<short-description>.
 pre-push:
   commands:
     branch-name:

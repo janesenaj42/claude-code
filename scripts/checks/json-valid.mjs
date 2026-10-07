@@ -1,7 +1,7 @@
 // Fails if a JSON file doesn't parse: the files given as arguments, or every tracked .json
 // file when there are none. Kept in a file, not inline in a hook: on Windows, lefthook splits an
 // inline `node -e "..."` script at its spaces. Run by the pre-commit hook on staged .json files,
-// and by CI on all of them; needs only Node and git (no jq on self-hosted runners).
+// or on all of them with no arguments; needs only Node and git.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 

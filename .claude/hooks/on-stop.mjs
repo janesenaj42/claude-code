@@ -3,7 +3,7 @@
 // Markdown changes are ignored: they can't affect a typecheck or a test.
 //
 // If Claude is already continuing because of this hook (stop_hook_active), it may stop: a
-// failure it can't fix must reach the user, not loop. CI still blocks the merge.
+// failure it can't fix must reach the user, not loop.
 import { join } from 'node:path';
 
 import { ROOT, areas, check, git, owner, payload } from './run.mjs';
