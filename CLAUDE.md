@@ -12,7 +12,7 @@ with a link.
 |---|---|
 | Git hooks and the commands they run | `lefthook.yml` (or `.husky/`) |
 | Commands Claude's hooks run after an edit and before a turn ends | `.claude/hooks/checks.json` |
-| CI checks | `.github/workflows/ci.yml`, `.github/scripts/` |
+| CI checks | `scripts/checks/`; run by `.github/workflows/ci.yml` (GitHub) or `.gitlab-ci.yml` (GitLab) |
 | Commit types | `commitlint.config.js` |
 | Tool versions | `package.json`, <build file: `build.gradle.kts`, `pyproject.toml`> |
 | <fact> | <file> |
@@ -33,7 +33,7 @@ Use the terms in `CONTEXT.md`. A new term gets defined there first.
 
 Conventional Commits, checked by commitlint (git hook, CI). Branches are
 `<type>/<issue number>/<short-description>` (`scripts/checks/branch-name.mjs`). PRs are
-squash-merged, so the PR title is the commit on `main`.
+squash-merged, so the PR (GitHub) or MR (GitLab) title is the commit on `main`.
 
 ## Code review standards
 

@@ -5,8 +5,6 @@ paths:
 
 # Code Review Standards (Python / FastAPI)
 
-Loaded for matching files; extends the root `CLAUDE.md` "Code review standards".
-
 ## Types
 - No `Any` from `typing` — use `TypeVar`, `Union`, `Literal`, or proper Pydantic models
 - Constrained string values must use `Literal` or `Enum`, not raw `str`

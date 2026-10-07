@@ -5,8 +5,6 @@ paths:
 
 # Code Review Standards (Java / Spring Boot)
 
-Loaded for matching files; extends the root `CLAUDE.md` "Code review standards".
-
 ## Spring WebFlux (Reactive)
 - Never block inside a reactive chain — no `.block()`, no `Thread.sleep()`
 - Use `thenMany()` for sequencing, `flatMap()` for async transformation, `Mono.defer()` for lazy evaluation

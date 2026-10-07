@@ -1,12 +1,12 @@
 // Fails unless a branch is named <type>/<issue number>/<short-description>,
 // e.g. fix/17/login-timeout, or <type>/<short-description> when there is no
 // issue, e.g. docs/readme-typo. <type> is one commitlint accepts
-// (commitlint.config.js), so the branch, the PR title and the squash commit
+// (commitlint.config.js), so the branch, the PR/MR title and the squash commit
 // on main agree.
 //
 // Usage: node branch-name.mjs [branch]   (default: the current branch)
-// Run by the pre-push hook (lefthook.yml or .husky/pre-push) and by CI on every PR
-// (.github/workflows/ci.yml).
+// Run by the pre-push hook (lefthook.yml or .husky/pre-push) and by CI on every PR/MR
+// (.github/workflows/ci.yml, .gitlab-ci.yml).
 import { execFileSync } from 'node:child_process';
 import load from '@commitlint/load';
 

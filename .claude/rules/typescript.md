@@ -6,8 +6,6 @@ paths:
 
 # Code Review Standards (React / TypeScript)
 
-Loaded for matching files; extends the root `CLAUDE.md` "Code review standards".
-
 ## TypeScript
 - `as` casting is a last resort — if you need it, the type upstream is wrong
 

@@ -5,7 +5,7 @@
 // (`https:`, `mailto:`, ...), same-page anchors (`#section`) and fenced code blocks. For
 // `file.md#section` only the file is checked.
 //
-// Usage: node .github/scripts/markdown-links.mjs   Run by CI (.github/workflows/ci.yml).
+// Usage: node scripts/checks/markdown-links.mjs   Run by CI (.github/workflows/ci.yml, .gitlab-ci.yml).
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

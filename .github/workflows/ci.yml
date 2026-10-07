@@ -1,5 +1,9 @@
-# Shown on PRs as "Checks / <job name>".
+# GitHub Actions. The GitLab equivalent is .gitlab-ci.yml; both only pass the platform's
+# values to the scripts in scripts/checks/, which hold every check. Shown on PRs as
+# "Checks / <job name>".
 # Every third-party action is pinned to a commit SHA, with its tag in the comment.
+# Runner: the CI_RUNS_ON repository or organization variable, as JSON: "ubuntu-latest" (the
+# default when unset) or ["self-hosted", "linux"]. Nothing in this file names a host.
 name: Checks
 
 on:
@@ -16,7 +20,7 @@ jobs:
   # Same checks as the git hooks, so skipping hooks with --no-verify doesn't get past review.
   commit-message:
     name: Commit message
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -42,7 +46,7 @@ jobs:
   branch-name:
     name: Branch name
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -54,13 +58,13 @@ jobs:
           BRANCH: ${{ github.head_ref }}
         run: node scripts/checks/branch-name.mjs "$BRANCH"
 
-  # Follows .github/pull_request_template.md, which `gh pr create --body` and
-  # the API skip. Re-runs when the description is edited (`edited` above).
-  # The body goes in through env, never into the script, so its text can't run.
+  # Follows .github/pull_request_template.md (scripts/checks/pr-description.mjs).
+  # Re-runs when the description is edited (`edited` above). The body goes in
+  # through env, never into the script, so its text can't run.
   pr-description:
     name: PR description
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -69,26 +73,29 @@ jobs:
       - env:
           PR_BODY: ${{ github.event.pull_request.body }}
           BRANCH: ${{ github.head_ref }}
-        run: node .github/scripts/pr-description.mjs
+        run: node scripts/checks/pr-description.mjs
 
   # Every relative link in every Markdown file points to a file that exists,
   # so moving a file can't leave docs pointing at nothing.
   markdown-links:
     name: Markdown links resolve
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
-      - run: node .github/scripts/markdown-links.mjs
+      - run: node scripts/checks/markdown-links.mjs
 
   # Every tracked .json file must parse.
   json:
     name: JSON files parse
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - run: for f in $(git ls-files '*.json'); do jq empty "$f" || exit 1; done
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+      - run: node scripts/checks/json-valid.mjs
 
-  # One build job per stack follows, from presets/<stack>/ci-job.yml in the baseline repo.
+  # One build job per stack follows, from presets/<stack>/github-job.yml in the baseline repo.

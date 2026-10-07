@@ -1,0 +1,76 @@
+# GitLab CI. The GitHub equivalent is .github/workflows/ci.yml; both only pass the platform's
+# values to the scripts in scripts/checks/, which hold every check.
+#
+# Nothing here names a host you must use. Images are variables: the values below are defaults
+# for gitlab.com, and a CI/CD variable of the same name (Settings > CI/CD > Variables, on the
+# project, group or instance) overrides them, e.g. NODE_IMAGE=registry.example.internal/node:24.
+# Runners: jobs carry no tags, so they run on runners that take untagged jobs; to pin a runner,
+# add `default: tags: [...]` here.
+
+variables:
+  NODE_IMAGE: node:24
+
+# Merge request pipelines, and pushes to the default branch; no duplicate branch pipeline
+# while a merge request is open.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+.node:
+  image: $NODE_IMAGE
+  cache:
+    key:
+      files: [package-lock.json]
+    paths: [.npm/]
+
+.merge-request-only:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Same checks as the git hooks, so skipping hooks with --no-verify doesn't get past review.
+# Merge requests are squash-merged with the title as the commit, so the title is checked.
+# A "Draft: " prefix is GitLab's, not part of the commit, and is left out.
+commit-message:
+  extends: .node
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - |
+      if [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ]; then
+        printf '%s\n' "$CI_MERGE_REQUEST_TITLE" | sed -E 's/^(Draft: *|\[Draft\] *|\(Draft\) *)//I' | npx commitlint --verbose
+      else
+        npx commitlint --last --verbose
+      fi
+
+# Same check as the pre-push hook.
+branch-name:
+  extends: [.node, .merge-request-only]
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - node scripts/checks/branch-name.mjs "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+
+# Follows the merge request template. GitLab doesn't start a pipeline when only the
+# description changes: after editing it, re-run this job.
+mr-description:
+  extends: [.node, .merge-request-only]
+  # Passed by the shell, not `variables:`, so a "$" in the description is never expanded.
+  script:
+    - >-
+      PR_BODY="$CI_MERGE_REQUEST_DESCRIPTION"
+      PR_BODY_TRUNCATED="$CI_MERGE_REQUEST_DESCRIPTION_IS_TRUNCATED"
+      BRANCH="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      node scripts/checks/pr-description.mjs
+
+markdown-links:
+  extends: .node
+  script:
+    - node scripts/checks/markdown-links.mjs
+
+json:
+  extends: .node
+  script:
+    - node scripts/checks/json-valid.mjs
+
+# One build job per stack follows, from presets/<stack>/gitlab-job.yml in the baseline repo.

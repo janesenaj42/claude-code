@@ -5,7 +5,8 @@
 | `checks.json` | `.claude/hooks/checks.json`, `areas` | `root` |
 | `lefthook.yml` | `lefthook.yml`, `pre-commit.commands` | add `root: <folder>/` when the area isn't the repo root |
 | `husky-pre-commit` | `.husky/pre-commit`, appended | the folder after `cd` |
-| `ci-job.yml` | `.github/workflows/ci.yml`, `jobs` | `working-directory`, `java-version` |
+| `github-job.yml` | `.github/workflows/ci.yml`, `jobs` (GitHub) | `working-directory`, `java-version` |
+| `gitlab-job.yml` | `.gitlab-ci.yml`, top level (GitLab) | `AREA_DIR` |
 | `build.gradle.fragment.kts` | `build.gradle.kts` | — |
 | `config/checkstyle/checkstyle.xml` | same path in the project | — |
 | `.gitattributes` lines below | `.gitattributes` | — |

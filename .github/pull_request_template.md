@@ -14,7 +14,7 @@ Closes #
 ## Screenshots (optional)
 
 <!-- Screen changes only; delete this section otherwise. A heading ending in
-     "(optional)" may be left out (.github/scripts/pr-description.mjs). -->
+     "(optional)" may be left out (scripts/checks/pr-description.mjs). -->
 
 ## Deviations and assumptions
 

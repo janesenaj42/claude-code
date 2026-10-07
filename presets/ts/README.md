@@ -5,7 +5,8 @@
 | `checks.json` | `.claude/hooks/checks.json`, `areas` | `root` |
 | `lefthook.yml` | `lefthook.yml`, `pre-commit.commands` | add `root: <folder>/` when the area isn't the repo root |
 | `husky-pre-commit` | `.husky/pre-commit`, appended | the folder after `cd` |
-| `ci-job.yml` | `.github/workflows/ci.yml`, `jobs` | `working-directory`, `cache-dependency-path` |
+| `github-job.yml` | `.github/workflows/ci.yml`, `jobs` (GitHub) | `working-directory`, `cache-dependency-path` |
+| `gitlab-job.yml` | `.gitlab-ci.yml`, top level (GitLab) | `AREA_DIR`, `cache.key.files` (`<folder>/package-lock.json`) |
 | `eslint.config.fragment.js` | `eslint.config.js`: spread into the exported array | — |
 
 The project's `package.json` must define the scripts these files call: `format:check`

@@ -7,9 +7,11 @@ description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hook
 
 The **baseline repo** is the repo holding this skill: resolve this skill's folder with
 `realpath` (it may be a symlink in `~/.claude/skills/`) and go up three levels. If that isn't a
-git checkout of `janesenaj42/claude-code` (e.g. a cloud session with no user-scope skills),
-clone `https://github.com/janesenaj42/claude-code` into the scratchpad and use that. Run
-`git -C <baseline> pull --ff-only` first, unless the target *is* a fresh copy of the template.
+git checkout (e.g. a cloud session with no user-scope skills), use `$BASELINE_REPO`: a local
+path, or a clone URL to clone into the scratchpad. If it's unset, ask the user for the clone
+URL; never assume a host, since the baseline is served from more than one (on-prem and online).
+Run `git -C <baseline> pull --ff-only` first, unless the target *is* a fresh copy of the
+template.
 
 The **target** is the repo the user names, or the current repo.
 
@@ -24,7 +26,8 @@ Report a table of what you find, with the file that told you:
 | Areas: folders with their own stack | `package.json` with `typescript` → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
 | Each Area's existing commands | `package.json` `scripts`; Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
 | Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; `git config core.hooksPath` set to another folder (e.g. `.githooks/`) → shell hooks; executable files in `.git/hooks/` other than `*.sample` → local hooks; none |
-| Existing CI | `.github/workflows/*.yml` |
+| Platform | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
+| Existing CI | `.github/workflows/*.yml`, `.gitlab-ci.yml` |
 | Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `.github/pull_request_template.md`, `CONTEXT.md`, `docs/adr/`, `.gitattributes` |
 | Stack not covered | Maven, Gradle Groovy-only, pnpm/yarn, Poetry: say so, and adapt the preset's commands rather than skipping it |
 
@@ -60,20 +63,20 @@ missing, and ask where they disagree.
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
 | Git hooks, lefthook or none | `lefthook.yml`, `presets/<stack>/lefthook.yml` | Merge; per Area, add its preset's commands with `root: <folder>/` unless the Area is `.`; drop commands the target already runs |
 | Git hooks, husky or shell hooks | `presets/husky/*`, `presets/<stack>/husky-pre-commit` | Append to `<hooks folder>/<hook>` (`.husky/`, or the `core.hooksPath` folder); set the `cd` folder; drop `lefthook` from `package.json`. Shell hooks: a new hook file needs `#!/bin/sh` and `chmod +x` (`git update-index --chmod=+x`) |
-| PR template | `.github/pull_request_template.md`, `.github/scripts/pr-description.mjs` | Merge; replace the `<kind of change>` Definition of Done line with the target's own checks. The script reads the template's `##` headings, so it follows whatever the template becomes |
-| CI | `.github/workflows/ci.yml`, `.github/scripts/markdown-links.mjs`, `presets/<stack>/ci-job.yml` | Add the shared jobs; one build job per Area with `working-directory` set; skip a build job the target's CI already covers and say which |
+| PR/MR template | `.github/pull_request_template.md`, `scripts/checks/pr-description.mjs` | Merge into `.github/pull_request_template.md` (GitHub) or `.gitlab/merge_request_templates/Default.md` (GitLab); replace the `<kind of change>` Definition of Done line with the target's own checks. The script reads the template's `##` headings, so it follows whatever the template becomes |
+| CI | GitHub: `.github/workflows/ci.yml`, `presets/<stack>/github-job.yml`. GitLab: `.gitlab-ci.yml`, `presets/<stack>/gitlab-job.yml`. Both: `scripts/checks/markdown-links.mjs`, `pr-description.mjs` | The target's platform only. Add the shared jobs; one build job per Area with its folder set (`working-directory` or `AREA_DIR`); skip a build job the target's CI already covers and say which. Write no host into either file: runners and images come from the variables named in their header comments |
 | Lint rules | `presets/ts/eslint.config.fragment.js`, `presets/java-gradle/{build.gradle.fragment.kts,config/}`, `presets/python/pyproject.fragment.toml` | Merge into the Area's config. If the target already breaks these rules, show the count and ask: fix now, or add the rules as warnings and open an issue |
 | Checks table | `README.md` "Checks" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
-| ADRs | `docs/adr/0001-record-architecture-decisions.md` | Copy into `docs/adr/` with the next free number if the target has ADRs. Not 0002/0003: they explain the baseline itself |
+| ADRs | `docs/adr/0001-record-architecture-decisions.md` | Copy into `docs/adr/` with the next free number if the target has ADRs. Not 0002 to 0004: they explain the baseline itself |
 
 Each preset's `README.md` lists what its project must provide (npm scripts, dev dependencies);
 add what's missing.
 
 If the target is a fresh copy of the template, also delete the baseline-only files once the
-Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, `docs/adr/0002-*`,
-`docs/adr/0003-*`, and replace `README.md` with the project's own.
+Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, `docs/adr/0002-*` to `0004-*`,
+the other platform's CI file and template, and replace `README.md` with the project's own.
 
 ## 4. Verify
 
@@ -82,7 +85,8 @@ Run each and report pass or fail with the output; fix what fails before reportin
 1. `npm install` at the root (installs the hooks via `prepare`, unless husky).
 2. `node scripts/checks/branch-name.mjs <a valid name>` and an invalid one: passes, then fails.
 3. `printf 'feat: x\n' | npx commitlint` passes; `printf 'bad\n' | npx commitlint` fails.
-4. `node .github/scripts/markdown-links.mjs`.
+4. `node scripts/checks/markdown-links.mjs`, and `node scripts/checks/pr-description.mjs` with
+   `PR_BODY` set to a filled-in template (passes) and to an empty string (fails).
 5. Every `onEdit` and `onStop` command in `checks.json`, run by hand in its Area.
 6. The hooks fire: stage a file with invalid JSON and run `git commit -m 'bad'`; it must be
    rejected. A passing `lefthook run` is not enough: `lefthook install` exits 0 without
@@ -93,4 +97,11 @@ Run each and report pass or fail with the output; fix what fails before reportin
 ## 5. Report
 
 A table: piece, what changed (file), verified how. Then a list of what's left for the user:
-secrets, branch protection (requiring the CI checks), Node for Java/Python developers.
+
+1. Requiring the CI checks before merge: branch protection (GitHub), "Pipelines must succeed"
+   (GitLab).
+2. Squash merging with the title as the commit: the default on GitHub; on GitLab, set "Squash
+   commits when merging" to required and the squash commit template to `%{title}`.
+3. On-prem: the variables the CI file's header names (`CI_RUNS_ON`, `NODE_IMAGE`, ...), and
+   package registries in npm, Gradle and uv configuration (never committed).
+4. Node for Java and Python developers (`docs/adr/0002-*` in the baseline).
