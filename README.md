@@ -84,7 +84,7 @@ the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the he
 | Conventional Commits | Changelogs and release tools read the type | [`commitlint.config.mjs`](commitlint.config.mjs); `npm run commit` for a guided prompt |
 | PR/MR title is a Conventional Commit | Squash merging makes the title the commit on `main` | The CI team's pipeline |
 | Branch `<type>/<issue>/<slug>` | The branch, title and commit agree, and name the issue | [`scripts/checks/branch-name.mjs`](scripts/checks/branch-name.mjs) |
-| PR/MR and issue templates, for GitHub and GitLab | Every PR/MR says what changed, how it was tested and what was assumed; every issue says what's wrong or what's needed | Review; [`scripts/checks/templates-match.mjs`](scripts/checks/templates-match.mjs) keeps the two platforms' copies the same |
+| PR/MR and issue templates | Every PR/MR says what changed, how it was tested and what was assumed; every issue says what's wrong or what's needed | Review; published once per org and group (below) |
 
 ### Each stack is linted for the review standards
 
@@ -98,6 +98,18 @@ package. `presets/husky/` is for projects that keep husky or their own hooks.
 [`CONTEXT.md`](CONTEXT.md) defines the project's terms. [`docs/adr/`](docs/adr/) holds a
 project's decision records; the baseline ships only their format,
 [`docs/adr/template.md`](docs/adr/template.md).
+
+## Templates, once per org and group
+
+The PR/MR and issue templates in `.github/` and `.gitlab/` here are the source. Projects don't
+copy them: each platform serves them to every repo from one place. Publish them once, and again
+after changing them here (`scripts/checks/templates-match.mjs` keeps the two platforms' bodies
+the same).
+
+| Platform | Steps | Applies to |
+|---|---|---|
+| GitHub | 1. In the org, create a repository named `.github`, or use the existing one. It must be **public**: GitHub ignores default templates in a private one. 2. Copy `.github/pull_request_template.md` and `.github/ISSUE_TEMPLATE/` from this repo to the same paths there. 3. Make sure the `bug` and `enhancement` labels exist in the repos (GitHub creates both by default) | Every repo in the org without its own templates; a repo's own `.github/ISSUE_TEMPLATE/` replaces the org's whole folder |
+| GitLab (Premium) | 1. Create one project in the group, e.g. `templates`. 2. Copy `.gitlab/merge_request_templates/` and `.gitlab/issue_templates/` from this repo into it. 3. Group → Settings → General → Templates: select that project | Every project in the group and its subgroups: the templates appear in the template list of new issues and MRs |
 
 ## How the baseline is built
 
