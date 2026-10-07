@@ -57,22 +57,17 @@ missing, and ask where they disagree.
 | Stack rules | `.claude/rules/{typescript,java,python}.md` | Copy the ones for the target's stacks |
 | Writing rules | `.claude/rules/{docs,writing-style}.md` | Copy |
 | Claude hooks | `.claude/settings.json`, `.claude/hooks/*.mjs` | Merge `hooks` into the target's `.claude/settings.json`; copy the scripts |
-| Hook commands | `.claude/hooks/checks.json`, `presets/<stack>/checks.json` | One entry in `areas` per Area, from its preset, `root` set; replace commands the target runs differently (e.g. a `poe` task, `pnpm`) |
 | Commits | `commitlint.config.js`, root `package.json` | Copy the config; merge the devDependencies, `scripts.commit`, `config.commitizen`, `engines` into the root `package.json` (create one for Java/Python targets, `"private": true`) |
+| Each Area's stack | `presets/<stack>/` | Every file, as `presets/<stack>/README.md` says: Claude hook commands, git hook commands (lefthook, or the husky/shell-hook lines with `presets/husky/README.md`), the CI job for the target's platform only, lint config. Skip what the target already runs and say which. If the target already breaks the new lint rules, show the count and ask: fix now, or add them as warnings and open an issue. Write no host into any file: runners and images come from the variables named in the CI files' header comments |
+| Shared CI jobs | `.github/workflows/ci.yml` (GitHub) or `.gitlab-ci.yml` (GitLab), `scripts/checks/markdown-links.mjs` | Merge into the target's CI file for its platform |
+| Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks: append as `presets/husky/README.md` says |
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
-| Git hooks, lefthook or none | `lefthook.yml`, `presets/<stack>/lefthook.yml` | Merge; per Area, add its preset's commands with `root: <folder>/` unless the Area is `.`; drop commands the target already runs |
-| Git hooks, husky or shell hooks | `presets/husky/*`, `presets/<stack>/husky-pre-commit` | Append to `<hooks folder>/<hook>` (`.husky/`, or the `core.hooksPath` folder); set the `cd` folder; drop `lefthook` from `package.json`. Shell hooks: a new hook file needs `#!/bin/sh` and `chmod +x` (`git update-index --chmod=+x`) |
 | PR/MR template | `.github/pull_request_template.md`, `scripts/checks/pr-description.mjs` | Merge into `.github/pull_request_template.md` (GitHub) or `.gitlab/merge_request_templates/Default.md` (GitLab); replace the `<kind of change>` Definition of Done line with the target's own checks. The script reads the template's `##` headings, so it follows whatever the template becomes |
-| CI | GitHub: `.github/workflows/ci.yml`, `presets/<stack>/github-job.yml`. GitLab: `.gitlab-ci.yml`, `presets/<stack>/gitlab-job.yml`. Both: `scripts/checks/markdown-links.mjs`, `pr-description.mjs` | The target's platform only. Add the shared jobs; one build job per Area with its folder set (`working-directory` or `AREA_DIR`); skip a build job the target's CI already covers and say which. Write no host into either file: runners and images come from the variables named in their header comments |
-| Lint rules | `presets/ts/eslint.config.fragment.js`, `presets/java-gradle/{build.gradle.fragment.kts,config/}`, `presets/python/pyproject.fragment.toml` | Merge into the Area's config. If the target already breaks these rules, show the count and ask: fix now, or add the rules as warnings and open an issue |
-| Checks table | `README.md` "Checks" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
+| Check layers table | `README.md` "Checks run in three layers" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
 | ADRs | `docs/adr/0001-record-architecture-decisions.md` | Copy into `docs/adr/` with the next free number if the target has ADRs. Not 0002 to 0004: they explain the baseline itself |
-
-Each preset's `README.md` lists what its project must provide (npm scripts, dev dependencies);
-add what's missing.
 
 If the target is a fresh copy of the template, also delete the baseline-only files once the
 Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, `docs/adr/0002-*` to `0004-*`,

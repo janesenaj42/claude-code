@@ -19,28 +19,25 @@ mkdir -p ~/.claude/skills
 ln -s ~/.claude/baseline/.claude/skills/adopt-baseline ~/.claude/skills/adopt-baseline
 ```
 
-Where there's no clone, e.g. a cloud session, the skill clones from `$BASELINE_REPO` (a path or
-clone URL) or asks for the URL. The skill surveys the project, proposes what to add or merge, waits for a yes, applies it and
-runs every check. Run it again later to bring a project up to date with this repo. What it
-copies, and how: [`.claude/skills/adopt-baseline/SKILL.md`](.claude/skills/adopt-baseline/SKILL.md).
+Run it again later to bring a project up to date with this repo. Where there's no clone (a
+cloud session), set `BASELINE_REPO` to a path or clone URL. What it does:
+[`.claude/skills/adopt-baseline/SKILL.md`](.claude/skills/adopt-baseline/SKILL.md).
 
-## What's in it
+## What a project gets
 
-| Practice | Files |
+### Claude works to the project's rules
+
+| Rule | File |
 |---|---|
-| Single source of truth; rules belong in CI; code review standards | [`CLAUDE.md`](CLAUDE.md) |
-| Per-stack review rules, loaded only for matching files | [`.claude/rules/`](.claude/rules/) `typescript.md`, `java.md`, `python.md` |
-| Writing rules for docs, comments, commits, PRs | [`.claude/rules/`](.claude/rules/) `docs.md`, `writing-style.md` |
-| Claude formats and lints each file it edits; can't end a turn with failing types or tests | [`.claude/settings.json`](.claude/settings.json), [`.claude/hooks/`](.claude/hooks/) |
-| Conventional Commits; PR title checked because PRs are squash-merged | [`commitlint.config.js`](commitlint.config.js), [`package.json`](package.json) (`npm run commit` for a guided prompt) |
-| Branch names `<type>/<issue>/<slug>` | [`scripts/checks/branch-name.mjs`](scripts/checks/branch-name.mjs) |
-| PR/MR template, checked in CI (the APIs, `gh` and `glab` skip it) | [`.github/pull_request_template.md`](.github/pull_request_template.md), [`scripts/checks/pr-description.mjs`](scripts/checks/pr-description.mjs) |
-| Every check as a script any CI or hook runner calls | [`scripts/checks/`](scripts/checks/) |
-| CI: same checks as the hooks, Markdown links, JSON, one build job per stack | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitHub), [`.gitlab-ci.yml`](.gitlab-ci.yml) (GitLab) |
-| Per-stack hook commands, CI job and lint config for the review standards | [`presets/`](presets/) `ts`, `java-gradle`, `python`, `husky` |
-| Glossary and decision records | [`CONTEXT.md`](CONTEXT.md), [`docs/adr/`](docs/adr/) |
+| Every fact in one file, docs link to it; a rule people must remember belongs in CI | [`CLAUDE.md`](CLAUDE.md) |
+| Code review standards, for every stack | [`CLAUDE.md`](CLAUDE.md) |
+| Stack review standards, loaded only when Claude reads that stack's files | [`.claude/rules/`](.claude/rules/) `typescript.md`, `java.md`, `python.md` |
+| How to write docs, comments, commit messages and PR descriptions | [`.claude/rules/`](.claude/rules/) `docs.md`, `writing-style.md` |
 
-## Checks
+### Checks run in three layers
+
+CI runs every check the git hooks run, so skipping a hook (`--no-verify`) or Claude (editing by
+hand) doesn't get past review.
 
 | Layer | Defined in | Runs | On failure | Bypass |
 |---|---|---|---|---|
@@ -48,30 +45,30 @@ copies, and how: [`.claude/skills/adopt-baseline/SKILL.md`](.claude/skills/adopt
 | Git hooks | `lefthook.yml` or `.husky/` | `pre-commit`, `commit-msg`, `pre-push` | Commit or push rejected | `--no-verify` |
 | CI | `.github/workflows/ci.yml`, `.gitlab-ci.yml` | Every PR/MR and push to `main` | Failing check on the PR/MR | None, once merging requires the checks (branch protection; GitLab "Pipelines must succeed") |
 
-## Claude hooks: `checks.json`
+The checks themselves are scripts in [`scripts/checks/`](scripts/checks/), so every layer and
+both platforms run the same code. [`.claude/hooks/checks.json`](.claude/hooks/checks.json) sets
+the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the header of
+[`.claude/hooks/run.mjs`](.claude/hooks/run.mjs).
 
-The hook scripts are the same in every project; [`.claude/hooks/checks.json`](.claude/hooks/checks.json)
-says what they run. One entry per Area (`CONTEXT.md`):
+### Commits, branches and PR/MR descriptions follow one convention
 
-```json
-{
-  "areas": [
-    {
-      "name": "web",
-      "root": "web",
-      "onEdit": [{ "match": "\\.tsx?$", "run": ["npx", "--no", "--", "eslint", "{file}"] }],
-      "onStop": [{ "run": ["npm", "test"], "okExitCodes": [0] }]
-    }
-  ]
-}
-```
+| Convention | Why | Checked by |
+|---|---|---|
+| Conventional Commits | Changelogs and release tools read the type | [`commitlint.config.js`](commitlint.config.js); `npm run commit` for a guided prompt |
+| PR/MR title is a Conventional Commit | Squash merging makes the title the commit on `main` | CI |
+| Branch `<type>/<issue>/<slug>` | The branch, title and commit agree, and name the issue | [`scripts/checks/branch-name.mjs`](scripts/checks/branch-name.mjs) |
+| Description follows the template | `gh`, `glab` and the APIs skip the template | [`scripts/checks/pr-description.mjs`](scripts/checks/pr-description.mjs) |
 
-| Key | Meaning |
-|---|---|
-| `root` | The Area's folder from the repo root; commands run there. A file belongs to the Area with the longest `root` containing it |
-| `onEdit` | Run after Claude edits a file in the Area. `match`: a regex on `{file}`; without it, every file. `{file}`: path from `root`; `{absfile}`: absolute path |
-| `onStop` | Run when Claude ends a turn and the Area has uncommitted non-Markdown changes |
-| `okExitCodes` | Exit codes that count as passing; default `[0]` |
+### Each stack is linted for the review standards
+
+[`presets/`](presets/) has, per stack (`ts`, `java-gradle`, `python`): the Claude and git hook
+commands, a CI job for GitHub and for GitLab, and lint config that enforces the standards marked
+*(lint)* in `CLAUDE.md`. `presets/husky/` is for projects that keep husky or their own hooks.
+
+### Terms and decisions are written down
+
+[`CONTEXT.md`](CONTEXT.md) defines the project's terms; [`docs/adr/`](docs/adr/) records
+hard-to-reverse decisions and why.
 
 ## GitHub, GitLab, on-prem
 
@@ -84,9 +81,3 @@ Not copied into projects; install them in `~/.claude/skills/` from
 [mattpocock/skills](https://github.com/mattpocock/skills): `grilling`, `grill-with-docs`,
 `domain-modeling`. Commit a copy into a project only if its cloud sessions need it or it changes
 the skill; keep the source commit and the MIT license file next to the copy.
-
-## Not checked by anything
-
-1. Review standards no linter can check (`CLAUDE.md`, `.claude/rules/`): for review.
-2. Merging with red checks: requires branch protection (GitHub's free plan has none for private
-   repositories) or GitLab's "Pipelines must succeed".

@@ -1,5 +1,20 @@
 // Shared by the Claude hooks in this folder (wired in .claude/settings.json). The commands come
-// from checks.json; its format is in the baseline README, "Claude hooks".
+// from checks.json, one entry per Area:
+//
+//   { "areas": [{
+//       "name": "web",
+//       "root": "web",
+//       "onEdit": [{ "match": "\\.tsx?$", "run": ["npx", "--no", "--", "eslint", "{file}"] }],
+//       "onStop": [{ "run": ["npm", "test"], "okExitCodes": [0] }]
+//   }] }
+//
+//   root         The Area's folder from the repo root; its commands run there. A file belongs to
+//                the Area with the longest root containing it.
+//   onEdit       Run after Claude edits a file in the Area (on-edit.mjs). match: a regex on
+//                {file}; without it, every file. {file}: path from root; {absfile}: absolute.
+//   onStop       Run when Claude ends a turn and the Area has uncommitted non-Markdown changes
+//                (on-stop.mjs).
+//   okExitCodes  Exit codes that count as passing; default [0].
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { posix, resolve, win32 } from 'node:path';

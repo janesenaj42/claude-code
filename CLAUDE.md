@@ -23,7 +23,7 @@ A README earns a line only for what these files cannot say: how to get started, 
 convention is for, the gotcha no config confesses.
 
 A rule people must remember to follow belongs in CI, not in a doc. Check layers: `README.md`,
-"Checks".
+"Checks run in three layers".
 
 ## Language
 
