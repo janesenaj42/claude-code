@@ -26,10 +26,13 @@ Report a table of what you find, with the file that told you:
 | Question | Look at |
 |---|---|
 | Areas: folders with their own stack | `package.json` with `react` and `typescript` → `react` (init-react; not Next.js, which init-react refuses: use `ts`); with `typescript` only → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
-| Each Area's existing commands | `package.json` `scripts`; Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
+| Each Area's existing commands | `package.json` `scripts` (note names that differ from the presets', e.g. `eslint` for `lint`, `check-format` for `format:check`); Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
+| Each Area's lint setup | ESLint version and config file (`.eslintrc*` is legacy: init-react keeps it and warns when its ESLint is older than the Standard's); whether the project's own `lint` script runs at all before any change |
 | Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; `git config core.hooksPath` set to another folder (e.g. `.githooks/`) → shell hooks; executable files in `.git/hooks/` other than `*.sample` → local hooks; none |
 | Platform, for the templates' paths | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
-| Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `.github/pull_request_template.md`, `CONTEXT.md`, `docs/adr/`, `.gitattributes` |
+| Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `CONTEXT.md`, `docs/adr/`, `.gitattributes`, `CONTRIBUTING.md` (release and commit rules) |
+| Existing templates | Every file in `.github/pull_request_template*`, `.github/PULL_REQUEST_TEMPLATE/`, `.github/ISSUE_TEMPLATE/`, `.gitlab/merge_request_templates/`, `.gitlab/issue_templates/`, whatever its name |
+| Package registry | `.npmrc`, `~/.npmrc`, lockfile `resolved` URLs, scripts that rewrite them, docs mentioning an air-gapped or on-prem network. If the target installs from a mirror (Nexus, Artifactory, GitLab), ask for its URL: init-react needs `--registry`, and `@janesenaj42/*` must be mirrored there first |
 | Stack not covered | Maven, Gradle Groovy-only, pnpm/yarn, Poetry: say so, and adapt the preset's commands rather than skipping it |
 
 A target with `.pre-commit-config.yaml`: ask whether to add the baseline's checks to it (as
@@ -44,7 +47,17 @@ it. Install lefthook only after that.
 ## 2. Agree the plan
 
 Show one table: each piece below, **add / merge / skip**, and why. Ask about anything that
-conflicts (an existing commit convention, a PR template with other sections). Wait for a yes.
+conflicts, and wait for a yes:
+
+1. An existing commit convention, or a PR/MR template with other sections.
+2. Existing issue or PR/MR templates under other names: keep the target's, and add the
+   baseline's only for the kinds it lacks. Never put two templates for the same kind side by side.
+3. Script names that differ from the presets' (e.g. `check-format`): init-react adds its own
+   names beside them; say which pairs will exist and ask whether to remove the old ones.
+4. The target's own lint or format check already failing before any change: list it; the
+   baseline's git hooks will then block commits until it is fixed.
+5. A legacy ESLint config: keep it (init-react warns about the version), or replace it with the
+   Standard (`--force=eslint`, which drops the target's own rules).
 Never add or change CI files (`.github/workflows/`, `.gitlab-ci.yml`): the CI team owns them.
 
 ## 3. Apply
@@ -58,13 +71,13 @@ missing, and ask where they disagree.
 | Stack rules | `.claude/rules/{typescript,java,python}.md` | Copy the ones for the target's stacks |
 | Writing rules | `.claude/rules/{docs,writing-style}.md` | Copy |
 | Claude hooks | `.claude/settings.json`, `.claude/hooks/*.mjs` | Merge `hooks` into the target's `.claude/settings.json`; copy the scripts |
-| Commits | `commitlint.config.js`, root `package.json` | Copy the config; merge the devDependencies, `scripts.commit`, `config.commitizen`, `engines` into the root `package.json` (create one for Java/Python targets, `"private": true`) |
+| Commits | `commitlint.config.mjs`, root `package.json` | Copy the config; merge the devDependencies, `scripts.commit`, `config.commitizen`, `engines` into the root `package.json` (create one for Java/Python targets, `"private": true`) |
 | Each Area's stack | `presets/<stack>/` | Every file, as `presets/<stack>/README.md` says: Claude hook commands, git hook commands (lefthook, or the husky/shell-hook lines with `presets/husky/README.md`), lint config. Skip what the target already runs and say which. If the target already breaks the new lint rules, show the count and ask: fix now, or open an issue to fix them first |
-| React Areas | `presets/react/` | As `presets/react/README.md` says: run init-react (`--skip=commitlint`; also `lefthook` when the target keeps husky or its own hooks), dry run first, then merge its `checks.json`. Not `presets/ts` |
-| Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks: append as `presets/husky/README.md` says |
+| React Areas | `presets/react/` | As `presets/react/README.md` says: run init-react (`--skip=commitlint`; also `lefthook` when the target keeps husky or its own hooks; `--registry=<mirror>` when it installs from one), dry run first and show every `!` line, then merge its `checks.json`. Not `presets/ts` |
+| Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks (`core.hooksPath`): append as `presets/husky/README.md` says, keeping every `\|\| exit 1`; a new hook file gets `#!/bin/sh` and the executable bit |
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
-| PR/MR and issue templates | GitHub: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`. GitLab: `.gitlab/merge_request_templates/Default.md`, `.gitlab/issue_templates/` | The target's platform only (both if it is mirrored to both, then also `scripts/checks/templates-match.mjs` and its `lefthook.yml` entry). Merge with templates the target has; replace the `<kind of change>` Definition of Done line with the target's own checks |
+| PR/MR and issue templates | GitHub: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`. GitLab: `.gitlab/merge_request_templates/Default.md`, `.gitlab/issue_templates/` | The target's platform, or both when it has both `.github/` and `.gitlab/` (then also `scripts/checks/templates-match.mjs` and its `lefthook.yml` entry; it pairs only the baseline's own file names). For the target's existing templates, see step 2, item 2; replace the `<kind of change>` Definition of Done line with the target's own checks |
 | Check layers table | `README.md` "Checks run in two layers" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
@@ -82,6 +95,10 @@ Run each and report pass or fail with the output; fix what fails before reportin
    rejected. A passing `lefthook run` is not enough: `lefthook install` exits 0 without
    installing when `core.hooksPath` points elsewhere, and `prepare` hides its errors
    (`|| true`). Check `git config core.hooksPath` is empty (lefthook) or the hooks folder.
+6. The hooks let good work through: commit one unchanged-but-touched source file from each Area
+   (e.g. add a blank line and remove it with the formatter) with a valid message on a valid
+   branch, and a change to `tsconfig.json`; each must succeed. A hook that blocks every commit
+   (a broken lint config, an ESLint version the config can't load) fails here, not in a week.
 
 ## 5. Report
 

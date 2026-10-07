@@ -13,7 +13,7 @@ with a link.
 | Git hooks and the commands they run | `lefthook.yml` (or `.husky/`) |
 | Commands Claude's hooks run after an edit and before a turn ends | `.claude/hooks/checks.json` |
 | Commit, branch and JSON checks | `scripts/checks/` |
-| Commit types | `commitlint.config.js` |
+| Commit types | `commitlint.config.mjs` |
 | PR/MR and issue templates | `.github/` (GitHub), `.gitlab/` (GitLab); same bodies, checked by `scripts/checks/templates-match.mjs` |
 | Tool versions | `package.json`, <build file: `build.gradle.kts`, `pyproject.toml`> |
 | <fact> | <file> |

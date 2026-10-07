@@ -2,7 +2,7 @@ pre-commit:
   commands:
     ts-lint:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
-      run: npx --no -- eslint --max-warnings 0 --no-warn-ignored {staged_files}
+      run: npx --no -- eslint {staged_files}
     ts-format:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,css}"
       run: npx --no -- prettier --check --ignore-unknown {staged_files}

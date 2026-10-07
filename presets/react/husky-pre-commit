@@ -2,4 +2,4 @@
 (
   cd . || exit 1
   npx --no -- lint-staged || exit 1
-)
+) || exit 1
