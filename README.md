@@ -103,8 +103,9 @@ project's decision records; the baseline ships only their format,
 
 The PR/MR and issue templates in `.github/` and `.gitlab/` here are the source. Projects don't
 copy them: each platform serves them to every repo from one place. Publish them once, and again
-after changing them here (`scripts/checks/templates-match.mjs` keeps the two platforms' bodies
-the same).
+after changing them here. GitHub's issue templates are issue forms (YAML, with required fields);
+GitLab has no forms, so its issue templates are Markdown with the same sections
+(`scripts/checks/templates-match.mjs` checks the two platforms ask for the same things).
 
 | Platform | Steps | Applies to |
 |---|---|---|
