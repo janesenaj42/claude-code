@@ -1,0 +1,88 @@
+---
+name: adopt-baseline
+description: Apply the project baseline (CLAUDE.md rules, Claude hooks, git hooks, Conventional Commits, branch names, PR template, CI checks, ADRs, glossary) to a project, new or existing, TypeScript, Java (Gradle) or Python, with lefthook or husky. Also re-runs to bring a project up to date with the baseline. Use when the user wants to adopt, apply, install or update the baseline, or set up a repo's conventions, hooks or CI from it.
+---
+
+# Adopt the baseline
+
+The **baseline repo** is the repo holding this skill: resolve this skill's folder with
+`realpath` (it may be a symlink in `~/.claude/skills/`) and go up three levels. If that isn't a
+git checkout of `janesenaj42/claude-code` (e.g. a cloud session with no user-scope skills),
+clone `https://github.com/janesenaj42/claude-code` into the scratchpad and use that. Run
+`git -C <baseline> pull --ff-only` first, unless the target *is* a fresh copy of the template.
+
+The **target** is the repo the user names, or the current repo.
+
+Never overwrite a target file without showing the diff and getting a yes. Merge; don't replace.
+
+## 1. Survey the target
+
+Report a table of what you find, with the file that told you:
+
+| Question | Look at |
+|---|---|
+| Areas: folders with their own stack | `package.json` with `typescript` → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
+| Each Area's existing commands | `package.json` `scripts`; Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
+| Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; none |
+| Existing CI | `.github/workflows/*.yml` |
+| Existing conventions | `CLAUDE.md`, `.claude/`, `commitlint.config.*`, `.github/pull_request_template.md`, `CONTEXT.md`, `docs/adr/`, `.gitattributes` |
+| Stack not covered | Maven, Gradle Groovy-only, pnpm/yarn, Poetry: say so, and adapt the preset's commands rather than skipping it |
+
+A target with `.pre-commit-config.yaml`: ask whether to add the baseline's checks to it (as
+`repo: local` hooks calling the same scripts) or replace it with lefthook. Never run two hook
+runners (`docs/adr/0003-any-hook-runner.md` in the baseline).
+
+## 2. Agree the plan
+
+Show one table: each piece below, **add / merge / skip**, and why. Ask about anything that
+conflicts (an existing commit convention, a PR template with other sections, CI that already
+runs the same tool). Wait for a yes.
+
+## 3. Apply
+
+Paths are from the baseline repo root. "Merge" means keep everything the target has, add what's
+missing, and ask where they disagree.
+
+| Piece | Baseline files | How |
+|---|---|---|
+| Instructions | `CLAUDE.md` | Merge sections into the target's `CLAUDE.md`. Fill the "Single source of truth" table with the target's real files; delete rows that don't apply; no `<...>` left |
+| Stack rules | `.claude/rules/{typescript,java,python}.md` | Copy the ones for the target's stacks |
+| Writing rules | `.claude/rules/{docs,writing-style}.md` | Copy |
+| Claude hooks | `.claude/settings.json`, `.claude/hooks/*.mjs` | Merge `hooks` into the target's `.claude/settings.json`; copy the scripts |
+| Hook commands | `.claude/hooks/checks.json`, `presets/<stack>/checks.json` | One entry in `areas` per Area, from its preset, `root` set; replace commands the target runs differently (e.g. a `poe` task, `pnpm`) |
+| Commits | `commitlint.config.js`, root `package.json` | Copy the config; merge the devDependencies, `scripts.commit`, `config.commitizen`, `engines` into the root `package.json` (create one for Java/Python targets, `"private": true`) |
+| Branch names | `scripts/checks/branch-name.mjs` | Copy |
+| JSON check | `scripts/checks/json-valid.mjs` | Copy |
+| Git hooks, lefthook or none | `lefthook.yml`, `presets/<stack>/lefthook.yml` | Merge; per Area, add its preset's commands with `root: <folder>/` unless the Area is `.`; drop commands the target already runs |
+| Git hooks, husky | `presets/husky/*`, `presets/<stack>/husky-pre-commit` | Append to `.husky/<hook>`; set the `cd` folder; drop `lefthook` from `package.json` |
+| PR template | `.github/pull_request_template.md`, `.github/scripts/pr-description.mjs` | Merge; replace the `<kind of change>` Definition of Done line with the target's own checks. The script reads the template's `##` headings, so it follows whatever the template becomes |
+| CI | `.github/workflows/ci.yml`, `.github/scripts/markdown-links.mjs`, `presets/<stack>/ci-job.yml` | Add the shared jobs; one build job per Area with `working-directory` set; skip a build job the target's CI already covers and say which |
+| Lint rules | `presets/ts/eslint.config.fragment.js`, `presets/java-gradle/{build.gradle.fragment.kts,config/}`, `presets/python/pyproject.fragment.toml` | Merge into the Area's config. If the target already breaks these rules, show the count and ask: fix now, or add the rules as warnings and open an issue |
+| Checks table | `README.md` "Checks" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
+| Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
+| Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
+| ADRs | `docs/adr/0001-record-architecture-decisions.md` | Copy into `docs/adr/` with the next free number if the target has ADRs. Not 0002/0003: they explain the baseline itself |
+
+Each preset's `README.md` lists what its project must provide (npm scripts, dev dependencies);
+add what's missing.
+
+If the target is a fresh copy of the template, also delete the baseline-only files once the
+Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, `docs/adr/0002-*`,
+`docs/adr/0003-*`, and replace `README.md` with the project's own.
+
+## 4. Verify
+
+Run each and report pass or fail with the output; fix what fails before reporting done:
+
+1. `npm install` at the root (installs the hooks via `prepare`, unless husky).
+2. `node scripts/checks/branch-name.mjs <a valid name>` and an invalid one: passes, then fails.
+3. `printf 'feat: x\n' | npx commitlint` passes; `printf 'bad\n' | npx commitlint` fails.
+4. `node .github/scripts/markdown-links.mjs`.
+5. Every `onEdit` and `onStop` command in `checks.json`, run by hand in its Area.
+6. `npx --no -- lefthook run pre-commit --all-files` (lefthook), or each `.husky/` hook with `sh`.
+7. Each CI build job's commands, run locally in its Area.
+
+## 5. Report
+
+A table: piece, what changed (file), verified how. Then a list of what's left for the user:
+secrets, branch protection (requiring the CI checks), Node for Java/Python developers.

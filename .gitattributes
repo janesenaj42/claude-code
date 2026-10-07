@@ -1,0 +1,8 @@
+* text=auto
+# Scripts that run on Linux (containers, CI) keep LF line endings, even in a Windows checkout
+# with core.autocrlf: with CRLF, `#!/bin/sh` asks for `sh\r`, which doesn't exist.
+*.sh text eol=lf
+gradlew text eol=lf
+.husky/* text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf

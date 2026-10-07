@@ -1,6 +1,11 @@
+---
+paths:
+  - "**/*.py"
+---
+
 # Code Review Standards (Python / FastAPI)
 
-Extends root `CLAUDE.md`. All universal rules apply.
+Loaded for matching files; extends the root `CLAUDE.md` "Code review standards".
 
 ## Types
 - No `Any` from `typing` — use `TypeVar`, `Union`, `Literal`, or proper Pydantic models

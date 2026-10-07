@@ -1,0 +1,8 @@
+# TypeScript (presets/ts): lint and format-check the staged files of this area.
+(
+  cd . || exit 1
+  staged=$(git diff --cached --name-only --diff-filter=ACMR --relative -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs')
+  [ -z "$staged" ] || npx --no -- eslint --max-warnings 0 --no-warn-ignored $staged || exit 1
+  staged=$(git diff --cached --name-only --diff-filter=ACMR --relative)
+  [ -z "$staged" ] || npx --no -- prettier --check --ignore-unknown $staged || exit 1
+)

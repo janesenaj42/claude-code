@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    java-format:
+      glob: "*.java"
+      run: sh ./gradlew spotlessCheck -q

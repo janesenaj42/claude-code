@@ -1,0 +1,21 @@
+# Git hooks, installed by `npm install` at the root (the `prepare` script).
+# Each stack adds its pre-commit commands from presets/<stack>/lefthook.yml in the baseline,
+# scoped with `root:` and `glob:` to the folder it owns.
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: npx --no -- commitlint --edit {1}
+
+# <type>/[<issue number>/]<short-description>; CI checks it on every PR too.
+pre-push:
+  commands:
+    branch-name:
+      run: node scripts/checks/branch-name.mjs
+
+pre-commit:
+  parallel: true
+  commands:
+    json-valid:
+      glob: "*.json"
+      run: node scripts/checks/json-valid.mjs {staged_files}

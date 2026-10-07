@@ -1,6 +1,11 @@
+---
+paths:
+  - "**/*.java"
+---
+
 # Code Review Standards (Java / Spring Boot)
 
-Extends root `CLAUDE.md`. All universal rules apply.
+Loaded for matching files; extends the root `CLAUDE.md` "Code review standards".
 
 ## Spring WebFlux (Reactive)
 - Never block inside a reactive chain — no `.block()`, no `Thread.sleep()`
@@ -9,4 +14,3 @@ Extends root `CLAUDE.md`. All universal rules apply.
 - `.switchIfEmpty()` is the reactive equivalent of null-check fallback
 - Chain error handling with `.onErrorMap()` to translate exceptions to domain errors, `.onErrorResume()` to recover
 - Never swallow reactive errors — always terminate the chain with an explicit error signal or fallback
-\
