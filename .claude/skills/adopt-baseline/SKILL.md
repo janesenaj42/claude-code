@@ -13,8 +13,7 @@ The **baseline repo**, in this order:
 3. Otherwise ask the user for the clone URL. Never assume a host: the baseline is served from
    more than one (on-prem and online).
 
-Run `git -C <baseline> pull --ff-only` first, unless the target *is* a fresh copy of the
-template. On a re-run, the plan in step 2 lists only what differs from the baseline.
+Run `git -C <baseline> pull --ff-only` first. On a re-run, the plan in step 2 lists only what differs from the baseline.
 
 The **target** is the repo the user names, or the current repo.
 
@@ -71,10 +70,6 @@ missing, and ask where they disagree.
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
 | Decision records | `docs/adr/template.md` | Copy if the target has no ADR format of its own. Copy no records: a project's records are its own decisions |
-
-If the target is a fresh copy of the template, also delete the baseline-only files once the
-Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, the other platform's CI file
-and template. Replace `README.md` with the project's own.
 
 ## 4. Verify
 

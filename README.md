@@ -5,23 +5,14 @@ one stack or several, with lefthook or husky, on GitHub or GitLab, online or on-
 
 ## Start
 
+Projects don't clone or copy this repo. A project, new or existing, runs `/adopt-baseline`, which
+copies only what its stacks and platform need. Start a new project with its stack's own tool
+(`npm create vite`, Spring Initializr, `uv init`), commit it, then follow the steps below.
+
 `<baseline URL>` below is the clone URL of whichever copy of this repo you can reach: GitHub,
 GitLab, or an on-prem mirror.
 
-### New project
-
-1. Create the repo from this one:
-   - GitHub: "Use this template" on this repo's page.
-   - GitLab: New project > "Create from template" (once an admin has added this repo as a group
-     or instance template), or New project > "Import project" > "Repository by URL" with
-     `<baseline URL>`.
-2. Clone the new repo, then in it run `claude`, then `/adopt-baseline`. The skill is in the repo,
-   so nothing needs installing.
-3. Answer its questions (stacks, folders, platform) and approve the plan it shows. It removes
-   the baseline-only files, sets up each stack, and runs every check.
-4. Commit on a branch (e.g. `chore/adopt-baseline`) and open a PR/MR.
-
-### Existing project, on your machine
+### On your machine
 
 1. Once per machine, install the skill for every project:
 
@@ -36,7 +27,7 @@ GitLab, or an on-prem mirror.
    and runs every check.
 4. Commit and open a PR/MR.
 
-### Existing project, in a Claude Code cloud session
+### In a Claude Code cloud session
 
 `~/.claude/` doesn't exist in a cloud session, so the skill comes from the baseline repo itself.
 
