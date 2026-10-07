@@ -67,13 +67,47 @@ commands, a CI job for GitHub and for GitLab, and lint config that enforces the 
 
 ### Terms and decisions are written down
 
-[`CONTEXT.md`](CONTEXT.md) defines the project's terms; [`docs/adr/`](docs/adr/) records
-hard-to-reverse decisions and why.
+[`CONTEXT.md`](CONTEXT.md) defines the project's terms. [`docs/adr/`](docs/adr/) holds a
+project's decision records; the baseline ships only their format,
+[`docs/adr/template.md`](docs/adr/template.md).
 
-## GitHub, GitLab, on-prem
+## How the baseline is built
 
-No file names a host. Runners, images and registries come from variables and tool
-configuration; which ones, and what each platform can't do: [`docs/adr/0004-github-and-gitlab.md`](docs/adr/0004-github-and-gitlab.md).
+### Node runs the shared checks, whatever the project's stack
+
+The checks every project shares and Claude's hooks are Node scripts, with commitlint for commit
+messages. Rewriting them per stack would mean three copies that drift apart. A Java or Python
+project gets a small root `package.json` for this tooling only, so its developers need Node to
+run the git hooks. Each stack's build, lint and test commands stay in its own toolchain.
+
+### Any hook runner calls the same scripts
+
+lefthook, husky, a `core.hooksPath` folder and CI all call the scripts in `scripts/checks/`. A
+project without hooks gets lefthook; one with husky or its own hooks keeps them
+([`presets/husky/`](presets/husky/)). Never two runners in one repo: husky sets
+`core.hooksPath`, and `lefthook install` then installs nothing (exit 0); `lefthook install` also
+renames hooks in `.git/hooks/` to `<hook>.old`, which then don't run.
+
+### GitHub and GitLab, online and on-prem, with no host in any file
+
+Each platform's CI file only passes its values to `scripts/checks/`. What differs between
+installations comes from configuration:
+
+| Varies | Set by |
+|---|---|
+| Where the baseline is cloned from | You, when cloning; `BASELINE_REPO` for `/adopt-baseline` |
+| GitHub runner | `CI_RUNS_ON` repository or organization variable (JSON) |
+| GitLab images | `NODE_IMAGE`, `JAVA_IMAGE`, `UV_IMAGE` CI/CD variables, overriding the YAML defaults |
+| GitLab runner | Jobs have no tags; add `default: tags:` to `.gitlab-ci.yml` to pin one |
+| npm, Gradle, PyPI registries | Each tool's configuration on the machine or runner, never committed |
+
+What each platform can't do:
+
+| Platform | Limit | Effect |
+|---|---|---|
+| GitHub Enterprise Server | `uses:` can't come from a variable | The pinned actions must be reachable: GitHub Connect, or synced with `actions-sync` |
+| GitLab | No pipeline when only an MR description changes | The description check re-runs on the next push, or by re-running the job |
+| GitLab | `CI_MERGE_REQUEST_DESCRIPTION` is cut at 2700 characters | `pr-description.mjs` doesn't report sections after the cut |
 
 ## Recommended user-scope skills
 

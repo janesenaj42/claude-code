@@ -33,7 +33,7 @@ Report a table of what you find, with the file that told you:
 
 A target with `.pre-commit-config.yaml`: ask whether to add the baseline's checks to it (as
 `repo: local` hooks calling the same scripts) or replace it with lefthook. Never run two hook
-runners (`docs/adr/0003-any-hook-runner.md` in the baseline).
+runners (baseline `README.md`, "Any hook runner calls the same scripts").
 
 A target with local hooks in `.git/hooks/`: they are on this machine only, not in the repo.
 `lefthook install` renames each to `<hook>.old`, after which it no longer runs, with no
@@ -67,11 +67,11 @@ missing, and ask where they disagree.
 | Check layers table | `README.md` "Checks run in three layers" | Add the table to the target's `README.md` (the target's `CLAUDE.md` points to it), with its real files |
 | Line endings | `.gitattributes`, `presets/java-gradle/README.md` | Merge |
 | Glossary | `CONTEXT.md` | Only if the target has none; fill the project name and description from its README |
-| ADRs | `docs/adr/0001-record-architecture-decisions.md` | Copy into `docs/adr/` with the next free number if the target has ADRs. Not 0002 to 0004: they explain the baseline itself |
+| Decision records | `docs/adr/template.md` | Copy if the target has no ADR format of its own. Copy no records: a project's records are its own decisions |
 
 If the target is a fresh copy of the template, also delete the baseline-only files once the
-Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, `docs/adr/0002-*` to `0004-*`,
-the other platform's CI file and template, and replace `README.md` with the project's own.
+Areas are set up: `presets/`, `.claude/skills/adopt-baseline/`, the other platform's CI file
+and template. Replace `README.md` with the project's own.
 
 ## 4. Verify
 
@@ -99,4 +99,4 @@ A table: piece, what changed (file), verified how. Then a list of what's left fo
    commits when merging" to required and the squash commit template to `%{title}`.
 3. On-prem: the variables the CI file's header names (`CI_RUNS_ON`, `NODE_IMAGE`, ...), and
    package registries in npm, Gradle and uv configuration (never committed).
-4. Node for Java and Python developers (`docs/adr/0002-*` in the baseline).
+4. Node for Java and Python developers (baseline `README.md`, "Node runs the shared checks").

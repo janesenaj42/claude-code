@@ -13,8 +13,8 @@ Write for a reviewer with none of your context and no time to reconstruct it.
    items becomes a numbered list or a table, never comma-separated inside a sentence.
 4. **Every step names the actor, the repository, the file, and the exact edit.**
    Write: "Add `"lint": "eslint ."` to `scripts` in `package.json`." Not: "set up linting".
-5. **Expand every identifier on first use** in a reply or section: "ADR-0002 (Node runs the
-   repo's own checks)", never a bare `ADR-0002`.
+5. **Expand every identifier on first use** in a reply or section: "ADR-0007 (orders are
+   stored as events)", never a bare `ADR-0007`.
 6. **Define jargon at first use, or drop it.**
 7. **Delete sentences carrying no fact.** Scene-setting, transitions, self-commentary,
    restatement of the previous paragraph.
