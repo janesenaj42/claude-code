@@ -1,7 +1,6 @@
 # Preset: TypeScript (npm), not React
 
-React projects get ESLint, Prettier, lint-staged and `typecheck` from init-react instead
-(`/adopt-baseline`, "React Areas"); only `checks.json` here applies to them.
+React projects use `presets/react/` instead.
 
 | File | Merges into | Replace |
 |---|---|---|

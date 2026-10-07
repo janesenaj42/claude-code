@@ -88,9 +88,10 @@ the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the he
 
 ### Each stack is linted for the review standards
 
-[`presets/`](presets/) has, per stack (`ts`, `java-gradle`, `python`): the Claude and git hook
-commands and lint config that enforces the standards marked *(lint)* in `CLAUDE.md`. React projects
-get theirs from [init-react](https://github.com/janesenaj42/init-react) instead of `presets/ts`. `presets/husky/` is for projects that keep husky or their own hooks.
+[`presets/`](presets/) has, per stack (`react`, `ts`, `java-gradle`, `python`): the Claude and git hook
+commands and lint config that enforces the standards marked *(lint)* in `CLAUDE.md`. `react` runs
+[init-react](https://github.com/janesenaj42/init-react), which ships its lint rules as a versioned
+package. `presets/husky/` is for projects that keep husky or their own hooks.
 
 ### Terms and decisions are written down
 

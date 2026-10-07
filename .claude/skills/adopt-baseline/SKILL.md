@@ -25,7 +25,7 @@ Report a table of what you find, with the file that told you:
 
 | Question | Look at |
 |---|---|
-| Areas: folders with their own stack | `package.json` with `react` and `typescript` → React (init-react); with `typescript` only → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
+| Areas: folders with their own stack | `package.json` with `react` and `typescript` → `react` (init-react; not Next.js, which init-react refuses: use `ts`); with `typescript` only → `ts`; `build.gradle(.kts)` + `gradlew` → `java-gradle`; `pyproject.toml` → `python`. A single-project repo has one Area at `.` |
 | Each Area's existing commands | `package.json` `scripts`; Gradle plugins (spotless, checkstyle); `[tool.ruff]`, `[tool.mypy]`, `[tool.poe.tasks]` in `pyproject.toml` |
 | Hook runner | `.husky/` → husky; `lefthook.yml` → lefthook; `.pre-commit-config.yaml` → pre-commit; `git config core.hooksPath` set to another folder (e.g. `.githooks/`) → shell hooks; executable files in `.git/hooks/` other than `*.sample` → local hooks; none |
 | Platform, for the PR/MR template's path | `.github/` → GitHub; `.gitlab-ci.yml` or `.gitlab/` → GitLab; neither: ask. Never decide from the remote's host name: on-prem hosts have any name |
@@ -60,7 +60,7 @@ missing, and ask where they disagree.
 | Claude hooks | `.claude/settings.json`, `.claude/hooks/*.mjs` | Merge `hooks` into the target's `.claude/settings.json`; copy the scripts |
 | Commits | `commitlint.config.js`, root `package.json` | Copy the config; merge the devDependencies, `scripts.commit`, `config.commitizen`, `engines` into the root `package.json` (create one for Java/Python targets, `"private": true`) |
 | Each Area's stack | `presets/<stack>/` | Every file, as `presets/<stack>/README.md` says: Claude hook commands, git hook commands (lefthook, or the husky/shell-hook lines with `presets/husky/README.md`), lint config. Skip what the target already runs and say which. If the target already breaks the new lint rules, show the count and ask: fix now, or open an issue to fix them first |
-| React Areas | init-react, not `presets/ts` | In the Area: `npx @janesenaj42/init-react --skip=commitlint --dry-run`, show its output, then run it without `--dry-run`. The baseline owns the commit convention; init-react owns ESLint, Prettier, lint-staged, `typecheck` and releases. Add `--registry=<url>` if the target installs from an on-prem mirror. Then add the Area to `checks.json` with `presets/ts/checks.json` (as its `README.md` says). Needs an init-react release with `--skip` (after 0.2.0) |
+| React Areas | `presets/react/` | As `presets/react/README.md` says: run init-react (`--skip=commitlint`; also `lefthook` when the target keeps husky or its own hooks), dry run first, then merge its `checks.json`. Not `presets/ts` |
 | Shared git hooks | `lefthook.yml`, or `presets/husky/` | lefthook or none: merge `lefthook.yml`. husky or shell hooks: append as `presets/husky/README.md` says |
 | Branch names | `scripts/checks/branch-name.mjs` | Copy |
 | JSON check | `scripts/checks/json-valid.mjs` | Copy |
