@@ -1,7 +1,7 @@
 // Fails unless a branch is named <type>/<issue number>/<short-description>,
 // e.g. fix/17/login-timeout, or <type>/<short-description> when there is no
 // issue, e.g. docs/readme-typo. <type> is one commitlint accepts
-// (commitlint.config.js), so the branch, the PR/MR title and the squash commit
+// (commitlint.config.mjs), so the branch, the PR/MR title and the squash commit
 // on main agree.
 //
 // Usage: node branch-name.mjs [branch]   (default: the current branch)

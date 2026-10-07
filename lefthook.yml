@@ -17,7 +17,7 @@ pre-commit:
   parallel: true
   commands:
     json-valid:
-      glob: "*.json"
+      glob: "*.{json,jsonc}"
       run: node scripts/checks/json-valid.mjs {staged_files}
     templates-match:
       glob: "{.github,.gitlab}/**/*.md"
