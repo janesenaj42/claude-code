@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-<!-- Baseline: copied into each project by /adopt-baseline. Replace every <...> placeholder. -->
+<!-- Baseline: copied into each project by /baseline:adopt-baseline. Replace every <...> placeholder. -->
 
 ## Single source of truth
 

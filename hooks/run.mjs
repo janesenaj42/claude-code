@@ -1,5 +1,6 @@
-// Shared by the Claude hooks in this folder (wired in .claude/settings.json). The commands come
-// from checks.json, one entry per Area:
+// Shared by the Claude hooks in this folder (wired in hooks.json, run by the `baseline` plugin in
+// every project that enables it). The commands come from the project's .claude/hooks/checks.json,
+// one entry per Area; a project without one runs nothing:
 //
 //   { "areas": [{
 //       "name": "web",
@@ -16,11 +17,12 @@
 //                (on-stop.mjs).
 //   okExitCodes  Exit codes that count as passing; default [0].
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { posix, resolve, win32 } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync } from 'node:fs';
+import { join, posix, resolve, win32 } from 'node:path';
 
-export const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+/** The project Claude Code runs in: hooks get it as CLAUDE_PROJECT_DIR. */
+export const ROOT = resolve(process.env.CLAUDE_PROJECT_DIR || process.cwd());
+const CHECKS = join(ROOT, '.claude', 'hooks', 'checks.json');
 
 /** The JSON Claude Code sends on stdin. */
 export function payload() {
@@ -29,7 +31,8 @@ export function payload() {
 
 /** The areas in checks.json, each with its root as a path from the repo root ("" for the root). */
 export function areas() {
-  const config = JSON.parse(readFileSync(new URL('./checks.json', import.meta.url), 'utf8'));
+  if (!existsSync(CHECKS)) return [];
+  const config = JSON.parse(readFileSync(CHECKS, 'utf8'));
   return (config.areas ?? []).map((area) => ({ ...area, root: normalize(area.root ?? '.') }));
 }
 

@@ -5,51 +5,58 @@ one stack or several, with lefthook or husky, on GitHub or GitLab, online or on-
 
 ## Start
 
-Projects don't clone or copy this repo. A project, new or existing, runs `/adopt-baseline`, which
-copies only what its stacks and platform need. Start a new project with its stack's own tool
+Projects don't clone or copy this repo. It is a Claude Code plugin, `baseline`, published to the
+`gc3-webplatform` marketplace ([Publish the plugin](#publish-the-plugin)). A project turns it on in
+its committed `.claude/settings.json`, so it runs in that project only, and `/baseline:adopt-baseline`
+copies what the project's stacks and platform need. Start a new project with its stack's own tool
 (`npm create vite`, Spring Initializr, `uv init`), commit it, then follow the steps below.
 
-`<baseline URL>` below is the clone URL of whichever copy of this repo you can reach: GitHub,
-GitLab, or an on-prem mirror.
+### Once per machine
 
-### On your machine
+Add the marketplace from wherever you can reach it: `gc3-webplatform/General-Docs` on GitHub, the
+git URL of its on-prem mirror, or a local folder with a copy. This turns no plugin on.
 
-1. Once per machine, install the skill for every project:
+```sh
+claude plugin marketplace add <source>
+```
+
+### Adopt the baseline in a project
+
+1. In the project, on a new branch, turn the plugin on for this repo (adds `enabledPlugins` to
+   `.claude/settings.json`):
 
    ```sh
-   git clone <baseline URL> ~/.claude/baseline
-   mkdir -p ~/.claude/skills
-   ln -s ~/.claude/baseline/.claude/skills/adopt-baseline ~/.claude/skills/adopt-baseline
+   claude plugin install baseline@gc3-webplatform --scope project
    ```
 
-2. In the project, on a new branch: run `claude`, then `/adopt-baseline`.
+2. Run `claude`, then `/baseline:adopt-baseline`.
 3. Review the plan (each piece marked add, merge or skip) and approve it. The skill applies it
    and runs every check.
 4. Commit and open a PR/MR.
 
+A teammate runs step 1's command once per machine, in any repo that has the plugin on. Until
+then, Claude's hooks don't run for them; the git hooks do.
+
 ### In a Claude Code cloud session
 
-`~/.claude/` doesn't exist in a cloud session, so the skill comes from the baseline repo itself.
+`~/.claude/` starts empty in a cloud session, so the skill comes from the marketplace repo itself.
 
 1. Start the session on the project's repo.
-2. If the baseline is on GitHub: add it to the session by prompting "add the repo
-   `<owner>/<name>`". Its skills load, including `/adopt-baseline`. Run `/adopt-baseline` and
-   name the project as the target.
+2. Add the marketplace repo by prompting "add the repo `gc3-webplatform/General-Docs`", then
+   prompt: "Follow `plugins/baseline/skills/adopt-baseline/SKILL.md` in that clone for this repo."
 
-Cloud sessions add GitHub repos only. For a baseline on GitLab or on-prem:
-
-1. In the cloud environment's settings (environment menu in the session's title bar > Edit), add
-   the environment variable `BASELINE_REPO=<baseline URL>`. The container's network must reach
-   that host, and a private repo needs credentials the container can use. Start a new session:
-   variables apply to new sessions only.
-2. In the session, prompt: "Clone `$BASELINE_REPO` and follow its
-   `.claude/skills/adopt-baseline/SKILL.md` for this repo."
+Cloud sessions add GitHub repos only. For a copy on GitLab or on-prem, add the environment
+variable `BASELINE_REPO=<clone URL>` in the cloud environment's settings (environment menu in the
+session's title bar > Edit; new sessions only; the container's network must reach that host),
+then prompt: "Clone `$BASELINE_REPO` and follow its `skills/adopt-baseline/SKILL.md` for this repo."
 
 ### Bring a project up to date
 
-Run `/adopt-baseline` again in the project, the same way as above. It pulls the latest baseline
-first (`git -C ~/.claude/baseline pull --ff-only` on your machine), compares, and proposes only
-what differs.
+```sh
+claude plugin marketplace update gc3-webplatform
+```
+
+Then run `/baseline:adopt-baseline` in the project: it compares and proposes only what differs.
 
 ## What a project gets
 
@@ -65,17 +72,17 @@ what differs.
 ### Checks run in two layers
 
 CI is not part of the baseline: the CI team owns pipelines. Git hooks can be skipped, so the CI
-team runs the same checks; `/adopt-baseline` reports which.
+team runs the same checks; `/baseline:adopt-baseline` reports which.
 
 | Layer | Defined in | Runs | On failure | Bypass |
 |---|---|---|---|---|
-| Claude hooks | `.claude/settings.json`, `.claude/hooks/checks.json` | After each Claude edit; when Claude ends a turn | Error returned to Claude; the turn can't end until fixed | Edits made outside Claude Code |
+| Claude hooks | The `baseline` plugin ([`hooks/`](hooks/)), on in `.claude/settings.json`; commands in `.claude/hooks/checks.json` | After each Claude edit; when Claude ends a turn | Error returned to Claude; the turn can't end until fixed | Edits made outside Claude Code; a machine without the plugin installed |
 | Git hooks | `lefthook.yml` or `.husky/` | `pre-commit`, `commit-msg`, `pre-push` | Commit or push rejected | `--no-verify` |
 
 The checks themselves are scripts in [`scripts/checks/`](scripts/checks/), so any hook runner,
-and any pipeline, runs the same code. [`.claude/hooks/checks.json`](.claude/hooks/checks.json) sets
-the commands Claude's hooks run per Area (`CONTEXT.md`); its format is in the header of
-[`.claude/hooks/run.mjs`](.claude/hooks/run.mjs).
+and any pipeline, runs the same code. A project's `.claude/hooks/checks.json` sets the commands
+Claude's hooks run per Area (`CONTEXT.md`); its format is in the header of
+[`hooks/run.mjs`](hooks/run.mjs).
 
 ### Commits, branches and PR/MR descriptions follow one convention
 
@@ -131,9 +138,31 @@ renames hooks in `.git/hooks/` to `<hook>.old`, which then don't run.
 
 ### No host in any file
 
-Where the baseline is cloned from is set when you clone it (`BASELINE_REPO` for
-`/adopt-baseline`). npm, Gradle and PyPI registries come from each tool's configuration on the
-machine, never from a committed file.
+Each machine adds the plugin's marketplace from the host it reaches; a project commits only the
+plugin's name (`enabledPlugins`), never `extraKnownMarketplaces`, which names a host. npm, Gradle
+and PyPI registries come from each tool's configuration on the machine, never from a committed
+file.
+
+## Publish the plugin
+
+This repo is the source; teammates install from `gc3-webplatform/General-Docs`, which they can
+read.
+
+1. Raise `version` in [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json): Claude Code
+   fetches a plugin again only when its version changes.
+2. Merge to `main`. From a checkout of `main`:
+
+   ```sh
+   node scripts/publish-plugin.mjs <General-Docs checkout>
+   ```
+
+3. In `General-Docs`, on a branch, commit `plugins/baseline/` and
+   `.claude-plugin/marketplace.json`, and open a PR.
+4. On-prem: update the mirror of `General-Docs`.
+
+To try a change before publishing it, set `BASELINE_REPO` to your checkout before running
+`claude`: `/baseline:adopt-baseline` then copies files from there. The hooks still come from the
+installed plugin.
 
 ## Recommended user-scope skills
 
